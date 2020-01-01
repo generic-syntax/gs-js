@@ -27,10 +27,21 @@ window.addEventListener("load", async () => {
 
 	//Footer
 	main.insertAdjacentElement('afterend', <footer>
-		<a class="licence" href="http://creativecommons.org/licenses/by/4.0/" target="_blank">
+		<div id="legal">
+			<div>© generic-syntax.org and contributors</div>
+			<div><a href="contact@generic-syntax.org">contact@generic-syntax.org</a></div>
+		</div>
+		<a id="license" href="http://creativecommons.org/licenses/by/4.0/" target="_blank">
 			<img src="res/cc.png"/><img src="res/by.png"/>
 			Content licensed under<br/>
-			Creative Commons Attribution 4.0 International license</a>
+			Creative Commons Attribution 4.0 International license
+		</a>
 	</footer>);
 });
 const mods = import("../mod/index.js");
+(() => {
+	const m = document.createElement("meta");
+	m.setAttribute("name", "viewport");
+	m.setAttribute("content", "width=device-width, initial-scale=1");
+	document.head.appendChild(m);
+})();

@@ -41,6 +41,7 @@
 .side {
 	padding: .5em;
 	margin: .5em;
+	min-width: 16em;
 }
 
 .side > h2 {
@@ -66,4 +67,16 @@
 	font-size: 80%;
 	text-decoration: none;
 	padding: .4em .7em;
+}
+
+@media (max-width: 30em) {
+	main {
+		padding: 0;
+	}
+
+	.panel {
+		margin: 0;
+		border-left: none;
+		border-right: none;
+	}
 }
