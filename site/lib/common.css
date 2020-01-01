@@ -55,11 +55,20 @@ nav > a.current {
 footer {
 	display: flex;
 	flex-wrap: wrap;
+	align-items: center;
 }
 
-#license {
-	flex: 1;
+#legal {
+	flex: 1 1 12em;
 	min-width: 10em;
+	text-align: center;
+	padding: .5em 1em;
+	font-size: 80%;
+}
+
+#license,
+#github {
+	flex: 1 1 auto;
 	display: block;
 	color: #033300;
 	text-decoration: none;
@@ -69,19 +78,12 @@ footer {
 	text-align: center;
 }
 
-#license > img {
+#license > img,
+#github > img {
 	flex: 1;
 	height: 1.5em;
 	vertical-align: middle;
 	margin: 0 .3em;
-}
-
-#legal {
-	flex: 1;
-	min-width: 10em;
-	text-align: center;
-	padding: .5em 1em;
-	font-size: 80%;
 }
 
 main {
@@ -152,6 +154,10 @@ a {
 		font-size: 90%;
 	}
 
+	html {
+		padding: 0;
+	}
+
 	nav {
 		text-align: center;
 	}
@@ -160,12 +166,11 @@ a {
 		padding: .3em .5em;
 	}
 
-	html {
-		background-color: #fBfBfB;
-		padding: 0;
-	}
-
 	h2 {
 		font-size: 1.3em;
+	}
+
+	#licenseText {
+		display: none;
 	}
 }

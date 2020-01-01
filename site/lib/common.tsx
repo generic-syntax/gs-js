@@ -31,10 +31,15 @@ window.addEventListener("load", async () => {
 			<div>© generic-syntax.org and contributors</div>
 			<div><a href="contact@generic-syntax.org">contact@generic-syntax.org</a></div>
 		</div>
-		<a id="license" href="http://creativecommons.org/licenses/by/4.0/" target="_blank">
+		<a id="license" href="http://creativecommons.org/licenses/by/4.0/" target="_blank" title="Content licensed under Creative Commons Attribution 4.0 International license">
 			<img src="res/cc.png"/><img src="res/by.png"/>
+			<span id="licenseText">
 			Content licensed under<br/>
 			Creative Commons Attribution 4.0 International license
+			</span>
+		</a>
+		<a id="github" href="https://github.com/generic-syntax/gs-js" target="_blank" title="Source code at https://github.com/generic-syntax/gs-js">
+			<img src="res/github.png"/>
 		</a>
 	</footer>);
 });
