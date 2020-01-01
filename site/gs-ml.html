@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>GS for XML and HTML</title>
+	<link rel="stylesheet" type="text/css" href="lib/common.css">
+	<script src="lib/common.js"></script>
+</head>
+<body>
+
+<h1>Generic-Syntax for XML and HTML</h1>
+
+<main>
+	<h2>Simple examples</h2>
+
+	<p>A svg file:</p>
+	<ml-gsml-compare format="xml">
+<pre>&lt;svg:svg xmlns:svg="http://www.w3.org/2000/svg" version="1.1" viewBox="0 0 32 32">
+	&lt;svg:g>
+		&lt;svg:circle cx="2" cy="4" r="2"/>
+		&lt;svg:rect x="8" y="2" width="24" height="4"/>
+	&lt;/svg:g>
+&lt;/svg:svg></pre>
+	</ml-gsml-compare>
+
+	<p>A html file:</p>
+	<ml-gsml-compare format="gsml" output="html">
+<pre>&lt;html lang=en[
+&lt;head[
+	&lt;meta charset=UTF-8>
+	&lt;title"Html example">
+]>
+&lt;body[
+	&lt;h1`Title`>
+	&lt;p`Paragraph with &lt;em`inline tag`>.`>
+]>
+]></pre>
+	</ml-gsml-compare>
+
+	<p>A server html file with processing instructions:</p>
+	<ml-gsml-compare format="gsml" output="xml">
+<pre>&lt;html lang=en[
+&lt;head>
+&lt;body[
+    &lt;%php"ECHO 'Hello World!';">
+  ]>
+]></pre>
+	</ml-gsml-compare>
+
+	<h2>GS benefits over XML and HTML</h2>
+
+	<h3>Syntax overhead</h3>
+	<p>GS is sensibly optimized in minified form:</p>
+	<ul>
+		<li>Tag name are not repeated in the close tag.</li>
+		<li>Quotes are not required for single word values.</li>
+		<li>In XML, value for boolean attributes are not required.</li>
+	</ul>
+
+	<h3>Mixed content and DOM instanciation overhead</h3>
+	<ml-gsml-compare format="gsml" output="html">
+<pre>&lt;div[
+	&lt;p `&lt;em`consecutive`> &lt;span`words`>`>
+]></pre>
+	</ml-gsml-compare>
+
+	<p>XML and HTML do not differentiate insignificant white spaces for human readability (indentations) and significant spaces text nodes.</p>
+	<p>In this example the space between <code>em</code> and <code>span</code> tags is semanticaly needed whereas space betwwen <code>div</code>
+		and <code>p</code> is not.</p>
+	<p>That's why when DOM is instanciated, white spaces text nodes are always built but many are useless
+		and consumes unnecessarily time and memory.</p>
+
+	<p>In GS, authors use different body types node:</p>
+	<ul>
+		<li>In the list body type <code>[]</code>, white spaces are never significant and never be instanciated (as in JSON)</li>
+		<li>In the mixed body type <code>``</code>, all characters sequence between nodes <code><></code> define a significant text node.
+	</ul>
+
+	<p>Note: in GS this example can also be writen with a list node <code>[]</code> and a simple text node <code>""</code>:</p>
+	<ml-gsml-compare format="gsml" output="html">
+<pre>&lt;div[
+	&lt;p [
+		&lt;em"consecutive">
+		" "
+		&lt;span"words">
+	]>
+]></pre>
+	</ml-gsml-compare>
+
+
+	<h3>Mixed-content and editors auto-formatting</h3>
+
+	<p>Editors automatic reformat and reindent features are really useful. But these features do not work perfectly for XML and HTML
+		due to the undifferenciation of text nodes types:
+	<ul>
+		<li>pure white spaces,</li>
+		<li>text that can be reindented (like paragraph)</li>
+		<li>and text nodes where spaces must be preserved (like code fragment in <code>pre</code> tags in html).</li>
+	</ul>
+	</p>
+
+	<p>In XML, this issue is resolved with the decarative and inelegant <code>xml:space="preserve"</code> attribute, but its inheritable behavior contrary the modulatirty
+		principle and is source of regressions (those who edit big xml files like xsl where some parts must never be reindented well known this issue...)</p>
+
+	<p>Since HTML4 is a <a href="https://en.wikipedia.org/wiki/Domain-specific_language">DSL</a>, editors must know each tag name
+		and the issue is partially worked around (while authors don't intent to override standard html tags with <code>white-space</code> css property).</p>
+
+	<p>In HTML5 with web-components the issue become more important because there is no way to explicitly specify the break-space behavior:</p>
+
+	<code-mirror mode="htmlmixed" class="border">
+<pre>&lt;ml-gsml-compare format="xml">
+	&lt;pre>&amp;lt;svg:svg xmlns:svg="http://www.w3.org/2000/svg" version="1.1" viewBox="0 0 32 32">
+		&amp;lt;svg:g>
+			&amp;lt;svg:circle cx="2" cy="4" r="2"/>
+			&amp;lt;svg:rect x="8" y="2" width="24" height="4"/>
+		&amp;lt;/svg:g>
+	&amp;lt;/svg:svg>&lt;/pre>
+&lt;/ml-gsml-compare></pre>
+	</code-mirror>
+
+	<p>This html fragment with a web-component is issued of this page (see the first example). The <code>&lt;pre></code> tag
+		in the <code>&lt;ml-gsml-compare></code> web-component is useless but is added just for blocking the auto text reindentation in editors!</p>
+
+	<p>Here is the same example if this html page was written in GS, <code>&lt;pre></code> tag can be ommited because body node can be correctly typed in GS:</p>
+	<gs-viewer class="border">
+	<pre>&lt;ml-gsml-compare format=xml !"&lt;svg:svg xmlns:svg="http://www.w3.org/2000/svg" version="1.1" viewBox="0 0 32 32">
+  &lt;svg:g>
+    &lt;svg:circle cx="2" cy="4" r="2"/>
+    &lt;svg:rect x="8" y="2" width="24" height="4"/>
+  &lt;/svg:g>
+&lt;/svg:svg>!"></pre>
+	</gs-viewer>
+
+	<p>In GS to explicitly allow text reformatting, a <code>~</code> is prepended to the text body <code>~""</code>,
+		the attribute value <code>~''</code> or the mixed body <code>~``</code>:</p>
+	<div class="cols">
+		<gs-viewer class="border s1 scroll">
+			<pre>&lt;p "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed non risus. Suspendisse lectus tortor, dignissim sit amet, adipiscing nec, ultricies sed, dolor. Cras elementum ultrices diam. Maecenas ligula massa, varius a, semper congue, euismod non, mi. Proin porttitor, orci nec nonummy molestie, enim est eleifend mi, non fermentum diam nisl sit amet erat. Duis semper."></pre>
+		</gs-viewer>
+		<gs-viewer class="border s1 scroll">
+			<pre>&lt;p ~"Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed non risus. Suspendisse lectus tortor, dignissim sit amet, adipiscing nec, ultricies sed, dolor. Cras elementum ultrices diam. Maecenas ligula massa, varius a, semper congue, euismod non, mi. Proin porttitor, orci nec nonummy molestie, enim est eleifend mi, non fermentum diam nisl sit amet erat. Duis semper."></pre>
+		</gs-viewer>
+	</div>
+
+	<h3>Comments restrictions and imbrications</h3>
+	<ml-gsml-compare format="gsml" output="html">
+<pre>
+&lt;section [
+	&lt;div [
+		&lt;button onclick='count--;'>
+	]>
+]>
+</pre>
+	</ml-gsml-compare>
+
+	<p>To comment the <code>button</code> tag in HTML and XML:</p>
+	<div class="cols">
+
+		<div class="border s1 scroll">
+			<div class="head">HTML</div>
+			<code-mirror mode="htmlmixed">
+<pre>
+&lt;section>
+	&lt;div>
+		&lt;!--button onclick='count--;'-->
+	&lt;/div>
+&lt;/section>
+</pre>
+			</code-mirror>
+		</div>
+
+		<div class="border s1 scroll">
+			<div class="head">XML: '--' is forbiden in a comment!</div>
+			<code-mirror mode="xml">
+<pre>
+&lt;section>
+	&lt;div>
+		&lt;!--button onclick='count--->&lt;!---;'-->
+	&lt;/div>
+&lt;/section>
+</pre>
+			</code-mirror>
+		</div>
+	</div>
+
+	<p>In GS:</p>
+
+	<div class="cols">
+
+		<div class="border s1 scroll">
+			<div class="head">GS with preserving structure</div>
+			<gs-viewer>
+<pre>
+&lt;section [
+	&lt;div [
+		&lt;#button onclick='count--;'>
+	]>
+]>
+</pre>
+			</gs-viewer>
+		</div>
+
+
+		<div class="border s1 scroll">
+			<div class="head">GS as text comment</div>
+			<gs-viewer>
+<pre>
+&lt;section [
+	&lt;div [
+		&lt;#"button onclick='count--;'">
+	]>
+]>
+</pre>
+			</gs-viewer>
+		</div>
+	</div>
+
+
+	<p>Now, commenting the <code>div</code> tag in HTML and XML is really hard. Comment each line is the simple but laborious way:</p>
+	<div class="cols">
+		<div class="border s1 scroll">
+			<div class="head">HTML</div>
+			<code-mirror mode="htmlmixed">
+<pre>
+&lt;section>
+	&lt;!--div-->
+		&lt;!--button onclick='count--;'-->
+	&lt;!--/div-->
+&lt;/section>
+</pre>
+			</code-mirror>
+		</div>
+
+		<div class="border s1 scroll">
+			<div class="head">XML</div>
+			<code-mirror mode="xml">
+<pre>
+&lt;section>
+	&lt;!--div-->
+		&lt;!--button onclick='count--->&lt;!---;'-->
+	&lt;!--/div-->
+&lt;/section>
+</pre>
+			</code-mirror>
+		</div>
+	</div>
+
+
+	<p>It's always easy in GS:</p>
+
+	<div class="cols">
+
+		<div class="border s1 scroll">
+			<div class="head">GS with preserving structure</div>
+			<gs-viewer>
+<pre>
+&lt;section [
+  &lt;#div [
+    &lt;#button onclick='count--;'>
+  ]>
+]>
+</pre>
+			</gs-viewer>
+		</div>
+
+
+		<div class="border s1 scroll">
+			<div class="head">GS as text comment</div>
+			<gs-viewer>
+<pre>
+&lt;section [
+  &lt;#!"div [
+    &lt;#"button onclick='count--;'">
+  ]!">
+]>
+</pre>
+			</gs-viewer>
+		</div>
+	</div>
+
+
+	<h2>GS benefits over HTML</h2>
+
+	<h3>Generic parsing and serializing</h3>
+
+	<p>As opposed to XML and JSON, the main html issue is the needs of dedicated and complex parser and serializier with many special edge cases.</p>
+
+	<p>GS offers a generic and simple syntax: parsers and serializiers can easily be implemented in many languages.
+		For example a GS event driven parser implemnted in Typescript is less than 700 lines of code, comments included, and a minified serializer is about 200 lines.</p>
+
+	<p>Are these HTML dedicated parsing rules useful for authors ?</p>
+
+	<ml-gsml-compare format="gsml" output="html">
+<pre>&lt;script !"
+  if( a > 0 && a < 10) body.innerHTML="&lt;span>One digit&lt;/span>";
+!"></pre>
+	</ml-gsml-compare>
+
+	<p>The biggest useful dedicated HTML syntax exception is the script tag that allows any characters without escaping until the <code>&lt;/script></code> sequence.</p>
+	<p>In GS, the generic useful solution is the bounded escaping: the content between the boundaries is raw and never escaped.
+		<code>!"</code> is the simplest boundary, if this character sequence is present in the content, any character (except <code>"</code>)
+		can be inserted in the middle: <code>!!"</code>, <code>!."</code>, <code>!°"</code>, <code>!xyz"</code>, <code>!☠"</code>...</p>
+
+	<p>The GS bounded escaping can also be useful where HTML do not offers good solutions, like in textarea:</p>
+	<ml-gsml-compare format="gsml" output="html">
+<pre>&lt;textarea !"
+  &lt;svg:svg xmlns:svg="http://www.w3.org/2000/svg" version="1.1" viewBox="0 0 32 32">
+    &lt;svg:g>
+      &lt;svg:circle cx="2" cy="4" r="2"/>
+      &lt;svg:rect x="8" y="2" width="24" height="4"/>
+    &lt;/svg:g>
+  &lt;/svg:svg>
+!"></pre>
+	</ml-gsml-compare>
+
+
+	<h2>GS benefits over XML</h2>
+
+	<h3>Stricter and unreadable escaping</h3>
+
+	<ml-gsml-compare format="gsml" output="xml">
+<pre>&lt;script !"
+  if( a > 0 && a < 10) body.innerHTML="&lt;span>One digit&lt;/span>";
+!"></pre>
+	</ml-gsml-compare>
+
+	<p>One of the reasons for the failure of XHTML is the extreme syntactic constraint (resolved by HTML).</p>
+	<p>XML is a generic and simplified SGML (the common XML and HTML ancestor), but is not flexible enough.
+		Thirty years after, GS can propose a more elegant simple and generic syntax.</p>
+
+	<h2>Do it in GS (you can't in XML nor HTML)</h2>
+
+	<h3>Structured comments and processing instructions</h3>
+
+	<gs-viewer class="border">
+<pre><#THREAD [
+&lt;comment by=mark date=2019-12-12 [
+ &lt;p`Comment with &lt;em`rich html in GS format`>.`>
+ &lt;p`Usefull with an IDE that instrument it!`>
+]>
+&lt;comment by=john date=2019-12-18 [
+ &lt;p`Marvelous😉`>
+]>
+]>
+<%repeat over=myUsers [
+  &lt;div `<%entry.name>`>
+]>
+&lt;&http://schema.org/Product identifier=DMFL659{
+  name= "USB switch"
+  image= http://example.com/product/DMFL659.png
+}>
+</pre>
+	</gs-viewer>
+
+	<p>As opposed to html and xml, in GS "comments" and "processing instructions" (splitted in "instruction", "metas" and "syntax" in GS) are not restricted to text.</p>
+	<p>In GS comments <code>&lt;#></code>, instructions <code>&lt;%></code>, metas <code>&lt;&></code> and syntax <code>&lt;?></code> are regular nodes with just a special type in addition.</p>
+	<p>Comments can be as simple as text or highly structured (see <code>&lt;#THREAD></code> example above).</p>
+
+	<p>The <code>&lt;&http://schema.org/Product></code> example illustrate how semantic metadatas could be inserted in a presentation page as an alternative
+		of <a href="https://en.wikipedia.org/wiki/JSON-LD">JSON-LD</a> or <a href="https://en.wikipedia.org/wiki/Microdata_(HTML)">Microdatas</a></p>
+
+	<p>Note: due to DOM limitations, these richer comments and metas nodes can't be instantiated in DOM nodes and are skipped in the DOM building process.</p>
+
+	<h3>No restriction in names</h3>
+	<gs-viewer class="border">
+<pre>
+ &lt;http://schema.org/Product>
+ &lt;'a strange node name 😏' 'a strange \'attribute\'!'=true |'and an other 'attribute' with bounded escaping|'=ok>
+</pre>
+	</gs-viewer>
+
+	<p>As in JSON, node names and key attributes are illimited by escape mechanisms.</p>
+
+	<p>Of course, currently you can't use these free names if you want to transform your GS to DOM or XML/HTML.</p>
+
+	<h3>Multi-root document</h3>
+	<p>Like HTML, but as opposed to XML, GS document (or file) does not impose a single root element and can contain a set of nodes (see the examples above).
+		It can be instantiated in DOM as a <code>DocumentFragement</code>.</p>
+
+	<h3>Tail attributes</h3>
+	<gs-viewer class="border">
+<pre>
+&lt;content id=12 "
+...
+" sha256='2joE5T44CySmgKjv1KVAG1YIxyOxgiK5ZmDw4VUbrhc='>
+</pre>
+	</gs-viewer>
+
+	<p>In event driven streamed processing, it could be useful to add attributes to a node after the body have been processed like a computed size, CRC, hash key,
+		or a validated transaction id. It is possible in GS with adding attributes in tail node.</p>
+	<p>When parsed as DOM the tail attributes are preserved and merged with head attributes.</p>
+
+</main>
+</body>
+</html>

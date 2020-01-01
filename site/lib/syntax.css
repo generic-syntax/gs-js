@@ -1,0 +1,16 @@
+.syntax {
+	font-family: monospace;
+}
+
+.bigger {
+	font-size: 130%;
+}
+
+.symbol {
+	color: #007521;
+}
+
+.char {
+	color: #60271f;
+	font-weight: bold;
+}

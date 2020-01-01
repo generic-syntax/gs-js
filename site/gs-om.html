@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>GS for Object Mapping</title>
+	<link rel="stylesheet" type="text/css" href="lib/common.css">
+	<script src="lib/common.js"></script>
+</head>
+<body>
+
+<h1>Generic-Syntax for Object Mapping</h1>
+
+<main>
+	<h2>Lack of JSON and XML</h2>
+
+	<div class="cols">
+
+		<div class="border s1 scroll">
+			<div class="head">GS</div>
+			<gs-viewer>
+<pre>
+&lt;http://schema.org/Article identifier='5Pl8d4' {
+  author= "Author name"
+  datePublished= "2020-1-1"
+  image= &lt;http://schema.org/imageObject {
+  	url= "http://example.com/image.png"
+  	height=600
+  	width=800
+  }>
+  publisher= &lt;http://schema.org/Organization name='Publisher name' {
+  	logo=&lt;http://schema.org/imageObject url='http://example.com/logo.png'>
+  }>
+}>
+</pre>
+			</gs-viewer>
+		</div>
+
+		<div class="border s1 scroll">
+			<div class="head">JSON-LD</div>
+			<code-mirror mode="javascript">
+<pre>{
+	"@type": "http://schema.org/Article",
+	"identifer": "5Pl8d4"
+	"author": "Author name",
+	"datePublished": "2020-1-1",
+	"image": {
+		"@type": "http://schema.org/imageObject",
+		"url": "http://example.com/image.png",
+		"height": 600,
+		"width": 800
+	},
+	"publisher": {
+		"@type": "http://schema.org/Organization",
+		"name": "Publisher name",
+		"logo": {
+			"@type": "http://schema.org/imageObject",
+			"url": "http://example.com/logo.png"
+		}
+	}
+}
+</pre>
+			</code-mirror>
+		</div>
+	</div>
+
+	<p>JSON-LD is today one of the best for serializing a typed objects graph.
+		But the incapability to name objects in JSON has two flaws:</p>
+	<ul>
+		<li>The <code>@type</code> property affects readability.</li>
+		<li>The absence of named header enriched with attributes prevents efficient event driven parsing for directly instantiate typed objects
+			(and for avoid to instantiate costly intermediate generic objects).
+		</li>
+	</ul>
+
+	<p>On the over side, XML lacks of a key-node pair structure and is not well suited for this purpose.</p>
+
+	<p>GS solves these problems by combining JSON object properties and XML named object features.</p>
+
+	<h2>GS-OM language</h2>
+
+	<p>GS-OM is a secured library for building and serializing a complex and recursive graph of typed objects.
+		At parsing stage, according to its configuration, typed objects are instanciated, properties are assigned
+		and methods explicitly authorized can be called.</p>
+
+	<gs-viewer class="border scroll">
+<pre>
+&lt;?OM>
+&lt;User id='2197' {
+  <%id"JOM">
+  name= "John Merting"
+  chief= <%ref"MAD">
+  groups= [
+    <%ref"mgrs">
+  ]
+}>
+&lt;User id='2123' {
+  <%id"MAD">
+  name= "Marc Dublof"
+  groups=[
+    &lt;Group id='36564' {
+      <%id"admins">
+      name= "Administrators"
+    }>
+  ]
+  addTemporaryDelegation = <%call [
+	<%ref"JOM">
+  	&lt;Date day='2019-12-22'>
+  	14
+  ]>
+}>
+&lt;Group id='35' {
+  <%id"mgrs">
+  name= "Managers"
+}>
+<%with ref=admins {
+  addAlias= <%call ["AdminSys"]>
+}>
+</pre>
+	</gs-viewer>
+
+	<p>GS-OM use instruction GS node type <code><%></code> for link objects and call methods at the building step.</p>
+	<p><em class="warn">GS-OM is a project, currently not implemented.</em></p>
+</main>
+</body>
+</html>

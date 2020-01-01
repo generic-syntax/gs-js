@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>Generic-Syntax</title>
+	<link rel="stylesheet" type="text/css" href="lib/common.css">
+	<link rel="stylesheet" type="text/css" href="lib/panels.css">
+	<link rel="stylesheet" type="text/css" href="lib/syntax.css">
+	<script src="lib/common.js"></script>
+</head>
+<body>
+<h1>Generic-Syntax</h1>
+<main>
+	<section class="resume">
+		<p>After twenty years of good and loyal service,<br>
+			it's time to find a successor to XML, HTML and JSON,<br>
+			erase their many flaws and offer new syntactic possibilities...</p>
+	</section>
+
+	<section class="panel color1 rowReverse">
+		<div class="side s1 scroll">
+			<gs-viewer class="border">
+<pre>{
+  title="GS for JSON"
+  primitives= [
+  	true
+  	&lt;#"Hey, we can add comments!">
+  	false
+  	&lt;#'or comment fragment ✌'[
+  	12
+  	null
+  	]>
+  ]
+}</pre>
+			</gs-viewer>
+		</div>
+		<div class="side s1">
+			<h2>GS for JSON</h2>
+			<p>JSON can be written in Generic-Syntax.</p>
+			<p>GS is more optimized and allow new features like comments.</p>
+			<div class="seeMoreArea">
+				<a class="seeMoreBtn" href="gs-on.html">See more...</a>
+			</div>
+		</div>
+	</section>
+
+	<section class="panel color2">
+		<div class="side s1 scroll">
+			<gs-viewer class="border">
+<pre>&lt;html lang=en[
+  &lt;head[
+    &lt;meta charset=UTF-8>
+    &lt;title"GS for HTML">
+  ]>
+  &lt;body[
+    &lt;h1`Title`>
+    &lt;p`Paragraph with &lt;em`inline tag`>.`>
+    &lt;textarea disabled !"A "bounded escape"
+      mecanism allow to never have any
+      character escaped, &ltcool!>!">
+    &lt;p ~`The formattable flag &lt;code`~`> explicitly indicates to editors this text can be formated and indented.`>
+  ]>
+]></pre>
+			</gs-viewer>
+		</div>
+		<div class="side s1">
+			<h2>GS for HTML and XML</h2>
+			<p>Generic-Syntax is a great replacement for HTML and XML.</p>
+			<p>GS resolve many flaws of these two ancestors and is more optimized.</p>
+			<p>GS is generic and simple to parse and serialize in any language (unlike HTML).</p>
+			<div class="seeMoreArea">
+				<a class="seeMoreBtn" href="gs-ml.html">See more...</a>
+			</div>
+		</div>
+	</section>
+
+
+	<section class="panel color1 rowReverse">
+		<div class="side s1 scroll">
+			<gs-viewer class="border">
+<pre>
+&lt;Article identifier='5Pl8d4' {
+  author= "Author name"
+  datePublished= "2020-1-1"
+  image= &lt;imageObject {
+  	url= "http://example.com/image.png"
+  	height=600
+  	width=800
+  	}>
+  publisher= &lt;Organization name='Publisher name' {
+  	logo=&lt;imageObject url='http://example.com/logo.png'>
+  }>
+}>
+</pre>
+			</gs-viewer>
+		</div>
+		<div class="side s1">
+			<h2>GS for Object Mapping</h2>
+			<p>Neither JSON nor XML are well suited for Object Mapping.</p>
+			<p>Generic-syntax combine map properties of JSON and named nodes of XML
+				and offers new efficient syntax for specific purpose like serializing typed objects graph.</p>
+			<div class="seeMoreArea">
+				<a class="seeMoreBtn" href="gs-om.html">See more...</a>
+			</div>
+		</div>
+	</section>
+
+	<section class="panel color3">
+		<div class="side s1 center">
+			<h2>GS principles</h2>
+			<p>In GS all is <span class="symbol">node</span>:</p>
+			<div class="syntax bigger"><span class="symbol">node</span> = '<span class="char"><</span>' <span class="symbol">specialType</span>? <span class="symbol">name</span>? <span class="symbol">attribute</span>* <span
+					class="symbol">body</span>? <span class="symbol">attribute</span>*
+				'<span class="char">></span>'
+			</div>
+			<p>All node parts are optionnals, when a node has only a <span class="syntax"><span class="symbol">body</span></span>, it can be simplified:</p>
+			<div class="syntax bigger"><span class="symbol">simpleNode</span> = <span class="symbol">body</span> | <span class="symbol">rawCharacters</span></div>
+			<p><span class="syntax"><span class="symbol">body</span></span> can be a terminal text <code>""</code>, a list of nodes <code>[]</code>,
+				a map of properties <code>{}</code>, or a mixed content for paragraph and inline tags <code>``</code>.</code></p>
+			<p><span class="syntax"><span class="symbol">rawCharacters</span></span> is the limited characters set for names, values and body text usable without delimiters:</p>
+			<div class="syntax bigger"><span class="symbol">rawCharacters</span> = <span class="symbol">[a-zA-Z0-9_:\-./]+</span></div>
+			<div class="seeMoreArea">
+				<a class="seeMoreBtn" href="gsDefinition.html">See more...</a>
+			</div>
+		</div>
+	</section>
+
+	<section class="panel color4">
+		<div class="side s1 border scroll">
+			<code-mirror mode="javascript">
+<pre>
+const obj = GSON.parse(`{a=1 b="ok"}`);
+console.log(GSON.stringify(obj)); //minified
+console.log(GSON.stringify(obj, {serialize:{
+  method: 'pretty'
+}
+}));
+console.log(GSON.stringify(obj, {serialize:{
+  method: 'indented',
+  unformat: true,
+  indent: '\t'
+}
+}));
+
+const domFragment = GSML.parse('xml', `&lt;node att=value>`);
+console.log(GSML.stringify('xml', domFragment)); //minified
+console.log(GSML.stringify('xml', domFragment, {serialize:{
+  method: 'formatted',
+  indent: '   ',
+  lineWidth: 128
+}
+}));</pre>
+			</code-mirror>
+		</div>
+		<div class="side s1">
+			<h2>GS API</h2>
+			<p>A high level API provides simple parsing and serialization methods.</p>
+			<p>A low level API based on a logical and a physical events driven processing provides many more options and extensibility.</p>
+			<p>A first implementation is available in Typescript/Javascript for tests. <em class="warn">Generic-Syntax is not ready for production.</em></p>
+			<div class="seeMoreArea">
+				<a class="seeMoreBtn" href="gsApi.html">See more...</a>
+			</div>
+		</div>
+	</section>
+</main>
+</body>
+</html>

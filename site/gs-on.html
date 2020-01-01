@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>GS for JSON</title>
+	<link rel="stylesheet" type="text/css" href="lib/common.css">
+	<script src="lib/common.js"></script>
+</head>
+<body>
+
+<h1>Generic-Syntax for JSON</h1>
+
+<main>
+	<h2>A simple example</h2>
+	<json-gson-compare format="json">
+<pre>{
+  "string": "text",
+  "number": 12,
+  "array": [
+    true,
+    false,
+    null
+  ],
+  "nullVal": null,
+  "quoted key": true
+}</pre>
+	</json-gson-compare>
+	<p>Highlights:</p>
+	<ul>
+		<li>Quoting keys is not always required</li>
+		<li>Comma separtor is removed</li>
+		<li>Null value can be omitted</li>
+		<li>GS size is smaller</li>
+	</ul>
+
+	<h2>Escaping</h2>
+	<json-gson-compare format="gson">
+<pre>[
+  "Line feed is escaped in JSON,
+not in GS."
+  "For quotes \", it's the same"
+  !"A GS feature: "bounded escaping" !"
+]</pre>
+	</json-gson-compare>
+
+	<p>The GS bounded escaping principle is similar to the <a href="https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Content-Type" target="_blank">Multiparts content type</a>.
+		The content beetween the boundaries is raw and never escaped. <code>!"</code> is the simplest boundary, if this character sequence is present in the content,
+		any character (except <code>"</code>) can be inserted in the middle:
+		<code>!!"</code>, <code>!."</code>, <code>!°"</code>, <code>!xyz"</code>, <code>!☠"</code>...
+	</p>
+
+	<h2>Do it in GS (you can't in JSON)</h2>
+
+	<h3>Comments</h3>
+
+	<gs-viewer class="border">
+<pre>[
+  0
+  <#"A short comment">
+  1
+  {
+    a=2
+    <#TODO by=john date=2019-12-10 "A typed comment with metadatas">
+    b="x"
+    <#DISCUSS by=mark date=2019-12-12 [
+    &lt;p`Comment with &lt;em`rich html in GS-ML format`>.`>
+    &lt;p`Usefull with an IDE that instrument it!`>
+    ]>
+  }
+]</pre>
+	</gs-viewer>
+
+	<p>Simple or complex comments can be inserted in any object and array. Of course these comments are skipped when building the tree of objects.</p>
+	<div class="cols">
+		<gs-viewer class="border s1 scroll">
+<pre>{
+  string= "text"
+  number= 12
+  array= [
+    true
+    false
+    null
+  ]
+  nullVal
+  'quoted key'= true
+}</pre>
+		</gs-viewer>
+		<gs-viewer class="border s1 scroll">
+<pre>{
+  string= "text"
+  number= 12
+  <#{array= [
+    true
+    false
+    null
+  ]
+  nullVal
+  'quoted key'= true}>
+}</pre>
+		</gs-viewer>
+		<gs-viewer class="border s1">
+<pre>{
+  string= "text"
+  number= 12
+  <#"array= [
+    true
+    false
+    null
+  ]
+  nullVal
+  'quoted key'= true">
+}</pre>
+		</gs-viewer>
+	</div>
+
+	<p>It'is also really simple to comment a json fragment with preserving the structure or force the fragment as raw text.</p>
+
+	<h3>Multi root auto-boxing</h3>
+
+	<gs-viewer class="border">
+<pre>{event=load ts=2019-12-10T20:35:32.023Z}
+{event=click isTrusted ts=2019-12-10T21:46:12.223Z error="Uncaught ReferenceError: a is not defined"}
+</pre>
+	</gs-viewer>
+
+	<p>GS does not impose one root. For example, a log file with sequential events can be parsed and an array of objects will be returned.</p>
+
+	<h3>Optimized parsing for object mapping</h3>
+	<div class="cols">
+		<gs-viewer class="border s1 scroll">
+<pre>{type=Group
+id=17
+name=Administrators
+members=[
+		{type=User id=32 name=John password="{SHA256}..."}
+		{type=Group id=57
+			name="Berlin Team"
+			members
+		}
+	]
+}</pre>
+		</gs-viewer>
+		<gs-viewer class="border s2 scroll">
+<pre>< type=Group id=17 {
+name=Administrators
+members=[
+		< type=User id=32 name=John password='{SHA256}...'>
+		< type=Group id=57 {
+			name="Berlin Team"
+			members
+		}>
+	]
+}></pre>
+		</gs-viewer>
+	</div>
+	<p>These two GS are logically identical and will produce the same tree of generic objects with standard parsing.</p>
+	<p>But in an object mapping purpose, you need to construct different typed objects depending on some properties: <code>User</code> and
+		<code>Group</code> types in this example.</p>
+	<p>In the first classic form, similar to JSON, event driven parsing is not really useful and an intermediate tree of generic objects is
+		generally constructed first and then is mapped to the typed objects.</p>
+	<p>The optimized second form pull up some properties in the header attributes and permit a simple and efficient event driven parsing with direct
+		typed object construction. Have a look to <a href="gs-om.html">GS-OM</a> a more powerful Generic-Syntax for object mapping.</p>
+
+	<h2>How GS works ?</h2>
+	<p>In GS all is node and a node has this form:</p>
+
+	<pre>
+'<' specialType? name? attribute* (body attribute*)?'>'
+</pre>
+
+	<p>The <code>body</code> part can be a list <code>[]</code>, a map <code>{}</code>, or a text <code>""</code> (or without
+		quotes and limited characters set used in GS-ON profile for null, boolean and number values).</p>
+
+	<p>Each node part is optionnal. When the node has no <code>specialType</code> (like comments <code>#</code>), no <code>name</code>,
+		and no <code>attributes</code> but just a <code>body</code>, the <code>'<'</code> and <code>'>'</code> marks can be ommited and you
+		get the GS-ON profile.</p>
+
+	<p>Discover the <a href="gsDefinition.html">full syntax</a>.</p>
+
+</main>
+</body>
+</html>

@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>GS definition</title>
+	<link rel="stylesheet" type="text/css" href="lib/common.css">
+	<link rel="stylesheet" type="text/css" href="lib/syntax.css">
+	<script src="lib/common.js"></script>
+</head>
+<body>
+<h1>Generic-Syntax definition</h1>
+
+<main>
+	<h2>Explanations</h2>
+
+	<h3 id="node">node</h3>
+	<p>In GS all is node. A node has this form:</p>
+
+	<p class="syntax"><span class="symbol">node</span> = '<span class="char"><</span>'
+		<a href="#specialType" class="symbol">specialType</a>?
+		<a href="#name" class="symbol">name</a>?
+		<a href="#attribute" class="symbol">attribute</a>*
+		<a href="#body" class="symbol">body</a>?
+		<a href="#attribute" class="symbol">attribute</a>*
+		'<span class="char">></span>'
+	</p>
+
+	<h3 id="name">name</h3>
+	<p>Nodes have zero or one name.</p>
+	<p class="syntax"><span class="symbol">name</span> = <a href="#rawCharacters" class="symbol">rawCharacters</a> | <a href="#quotedStr" class="symbol">quotedStr</a> | <a href="#boundedStr" class="symbol">boundedStr</a></p>
+	<p>Examples:</p>
+	<gs-viewer class="border">
+<pre><>
+&lt;tagName>
+&lt;'quoted name'>
+&lt;'quoted \'name\' with escaping'>
+&lt;|'strange 'name' with bounded escaping|'>
+</pre>
+	</gs-viewer>
+
+	<h3 id="body">body</h3>
+	<p>Nodes have zero or one of the 4 body types:</p>
+	<p class="syntax"><span class="symbol">body</span> =
+		<a href="#bodyText" class="symbol">bodyText</a>
+		| <a href="#bodyList" class="symbol">bodyList</a>
+		| <a href="#bodyMap" class="symbol">bodyMap</a>
+		| <a href="#bodyMixed" class="symbol">bodyMixed</a></p>
+	<ul>
+		<li>Body text <span class="syntax">'<span class="char">""</span>'</span>, defines a terminal text.
+			<p id="bodyText" class="syntax"><span class="symbol">bodyText</span> = <a href="#formattable" class="symbol">formattable</a>?
+				( <a href="#quotedText" class="symbol">quotedText</a> | <a href="#" class="symbol">boundedText</a> )</p>
+		</li>
+		<li>Body list <span class="syntax">'<span class="char">[]</span>'</span>, defines a list of nodes as children.
+			<p id="bodyList" class="syntax"><span class="symbol">bodyList</span> = '<span class="char">[</span>'
+				( <a href="#node" class="symbol">node</a> | <a href="#simpleNode" class="symbol">simpleNode</a> )* '<span class="char">]</span>'</p>
+		</li>
+		<li>Body map <span class="syntax">'<span class="char">{}</span>'</span>, defines a set of properties (name-node pairs) as children.
+			<p id="bodyMap" class="syntax"><span class="symbol">bodyMap</span> = '<span class="char">{</span>'
+				( <a href="#property" class="symbol">property</a> | <a href="#node" class="symbol">node</a> )*
+				'<span class="char">}</span>'</p>
+			<p class="syntax"><span id="property" class="symbol">property</span> = <a href="#name" class="symbol">name</a>
+				( '<span class="char">=</span>' <a href="#node" class="symbol">node</a> | <a href="#simpleNode" class="symbol">simpleNode</a>)?</p>
+		</li>
+		<li>Body mixed <span class="syntax">'<span class="char">``</span>'</span>, defines also a list of nodes as children,
+			but with a different syntax useful and author friendly for document oriented content with paragraphs and inline tags.
+			<p id="bodyMixed" class="syntax"><span class="symbol">bodyMixed</span> = <a href="#formattable" class="symbol">formattable</a>? '<span class="char">`</span>'
+				( <a href="#mixedText" class="symbol">mixedText</a> | <a href="#node" class="symbol">node</a> ) '<span class="char">`</span>' </p>
+		</li>
+	</ul>
+	<p>Examples:</p>
+	<gs-viewer class="border">
+<pre>&lt;noBody>
+&lt;text "text node">
+&lt;text "text \"node\" with escaping">
+&lt;text !"text "node" with bounded escaping!">
+&lt;list[&lt;child>]>
+&lt;map{ property= &lt;child>}>
+&lt;mixed `paragraph with &lt;em `inline`> tags`>
+</pre>
+	</gs-viewer>
+
+	<h3 id="attribute">attribute</h3>
+	<p>Nodes can have zero or more attributes before and after its body. An attribute is a name-value pair, the value is optionnal.</p>
+	<p class="syntax"><span class="symbol">attribute</span> = <a href="#name" class="symbol">name</a> ( '<span class="char">=</span>' <a href="#value" class="symbol">value</a> )?</p>
+	<p id="value" class="syntax"><span class="symbol">value</span> = <a href="#rawCharacters" class="symbol">rawCharacters</a>
+		| <a href="#formattable" class="symbol">formattable</a> ? <a href="#quotedStr" class="symbol">quotedStr</a>
+		| <a href="#formattable" class="symbol">formattable</a> ? <a href="#boundedStr" class="symbol">boundedStr</a></p>
+	<p>Examples:</p>
+	<gs-viewer class="border">
+<pre>&lt; name=value quoted='value with any unicode 😊' bounded=|'value with 'bounded' escaping|' attWithoutValue>
+&lt; 'name quoted'=1 |'name with 'bounded' escaping|'=2>
+</pre>
+	</gs-viewer>
+
+	<h3 id="specialType">specialType</h3>
+	<p>Nodes can have zero or one of the 4 special types:</p>
+	<p class="syntax"><span class="symbol">specialType</span> = '<span class="char">#</span>' | '<span class="char">&amp;</span>' | '<span class="char">%</span>' | '<span class="char">?</span>'</p>
+	<ul>
+		<li>Comment <span class="syntax">'<span class="char">#</span>'</span>, for inserting comments in the content or wrap some nodes to exclude them.</li>
+		<li>Meta <span class="syntax">'<span class="char">&</span>'</span>, for inserting metadata in the content without changing the content itself.</li>
+		<li>Instruction <span class="syntax">'<span class="char">%</span>'</span>, for inserting processing instructions in interaction with the content.</li>
+		<li>Syntax <span class="syntax">'<span class="char">?</span>'</span>, for declaring the current GS profile. It is useful for editors or validators
+			in order to emit more dedicated errors and warnings. For example, in a GS-ML profile, the body <code>map</code> should not be used in this
+			content (not allowed in DOM and XML). In a GS-ON profile, named node should not be used, etc.
+		</li>
+	</ul>
+	<p>Examples:</p>
+	<gs-viewer class="border">
+<pre>&lt;# "text in the comment">
+&lt;#TODO by=Mark "typed comment">
+&lt;#THREAD [&lt;comment by=Mark "Structured comment">]>
+&lt;& "meta node. It can be also typed or structured like comments">
+<%repeat count=10 {}>
+&lt;?ON>
+&lt;?ML>
+&lt;?OM>
+</pre>
+	</gs-viewer>
+
+	<h3 id="simpleNode">simpleNode</h3>
+	<p>A simple node is a node without <code>specialType</code>, <code>name</code> and <code>attribute</code> and have only a <code>body</code>.
+		In this case, the <code><</code> and <code>></code> marks can be omitted.
+	</p>
+	<p class="syntax"><span class="symbol">simpleNode</span> = <a href="#body" class="symbol">body</a> | <a href="#rawCharacters" class="symbol">rawCharacters</a></p>
+	<p>Examples:</p>
+	<gs-viewer class="border">
+<pre>
+"text"
+rawCharacters
+[&lt;child>]
+{name= &lt;child>}
+`mixed text and &lt;child "node">`
+</pre>
+	</gs-viewer>
+
+	<h3 id="formattable">formattable</h3>
+	<p>The formattable flag <code>'~'</code> can be added before values and texts: it indicates this characters sequence can be formatted
+		and indented, for example by editors.</p>
+	<p class="syntax"><span class="symbol">formattable</span> ='<span class="char">~</span>'</p>
+	<p>The change allowed is simple : any space sequence can be replaced by any other space sequence. A space sequence is defined by the regular expression: <code>[ \t\n\r]+</code>.</p>
+	<p>Examples:</p>
+	<gs-viewer class="border">
+<pre>
+~"Long text"
+&lt;title ~"Long title...">
+&lt;product description=~'Long description...'{}>
+~`Long mixed &lt;span ~`text and node`>`
+</pre>
+	</gs-viewer>
+
+	<h3 id="rawCharacters">rawCharacters</h3>
+	<p><code>rawCharacters</code> is the limited characters set for names, values and body text in simple node usable without delimiters.
+		It is defined by a regular expression:</p>
+	<div class="syntax"><span class="symbol">rawCharacters</span> = <span class="symbol">[a-zA-Z0-9_:\-./]+</span></div>
+
+	<h3 id="quotedStr">quotedStr</h3>
+	<p>When names or values use a character not allowed in <code>rawCharacters</code>, it must be delimited by a single quote.
+		It is defined by a regular expression:</p>
+	<div class="syntax"><span class="symbol">quotedStr</span> = <span class="symbol">'([^'\\]|\\['"`&lt;bfnrt]|\\u[0-9A-Fa-f]{6})*'</span></div>
+	<p>Characters in this sequence can be espcaped by a <code>'\'</code>. See <a href="#commonEscapingRule">Commons quoted escaping rules</a>.</p>
+
+	<h3 id="boundedStr">boundedStr</h3>
+	<p>String delemited by a boundary can be used in names and values.</p>
+	<div class="syntax"><span class="symbol">boundedStr</span> = '<span class="char">|</span>' <span class="symbol">boundary</span>? '<span class="char">'</span>' <span class="symbol">any</span> '<span class="char">|</span>' <span
+			class="symbol">boundary</span>? '<span class="char">'</span>'
+	</div>
+	<p>Where:</p>
+	<ul>
+		<li><code>boundary</code> can be any sequence of characters except <code>'</code>. The start and end boundary MUST be the same.</li>
+		<li><code>any</code> can be any character sequence but MUST not contain the <code>|boundary'</code> sequence.</li>
+	</ul>
+
+	<h3 id="quotedText">quotedText</h3>
+	<p>Quoted text is used in the <code>bodyText</code>. It is defined by a regular expression:</p>
+	<div class=" syntax"><span class="symbol">quotedText</span> = <span class="symbol">"([^"\\]|\\['"`&lt;bfnrt]|\\u[0-9A-Fa-f]{6})*"</span></div>
+	<p>Characters in this sequence can be espcaped by a <code>'\'</code>. See <a href="#commonEscapingRule">Commons quoted escaping rules</a>.</p>
+
+	<h3 id="boundedText">boundedText</h3>
+	<p>Text delemited by a boundary can be used in the <code>bodyText</code>.</p>
+	<div class="syntax"><span class="symbol">boundedText</span> = '<span class="char">!</span>' <span class="symbol">boundary</span>? '<span class="char">"</span>' <span class="symbol">any</span> '<span class="char">!</span>' <span
+			class="symbol">boundary</span>? '<span class="char">"</span>'
+	</div>
+	<p>Where:</p>
+	<ul>
+		<li><code>boundary</code> can be any sequence of characters except <code>"</code>. The start and end boundary MUST be the same.</li>
+		<li><code>any</code> can be any character sequence but MUST not contain the <code>!boundary"</code> sequence.</li>
+	</ul>
+
+	<h3 id="mixedText">mixedText</h3>
+	<p>Mixed text is used in the <code>bodyMixed</code>. It is defined by a regular expression:</p>
+	<div class="syntax"><span class="symbol">mixedText</span> = <span class="symbol">([^<\\]|\\['"`&lt;bfnrt]|\\u[0-9A-Fa-f]{6})*</span></div>
+	<p>Characters in this sequence can be espcaped by a <code>'\'</code>. See <a href="#commonEscapingRule">Commons quoted escaping rules</a>.</p>
+
+	<h3 id="commonEscapingRule">Commons quoted escaping rules</h3>
+	<p>In <code>quotedStr</code>, <code>quotedText</code> and <code>mixedText</code> some characters can be escaped:</p>
+	<ul>
+		<li><code>\\</code>, <code>\'</code>, <code>\"</code>, <code>\`</code>, <code>\&lt;</code> escape the second character</li>
+		<li><code>\b</code> escape the backspace <code>08</code> unicode character</li>
+		<li><code>\f</code> escape the form feed <code>0C</code> unicode character</li>
+		<li><code>\n</code> escape the line feed <code>0A</code> unicode character</li>
+		<li><code>\r</code> escape the carriage return <code>0D</code> unicode character</li>
+		<li><code>\t</code> escape the tabultaion <code>09</code> unicode character</li>
+	</ul>
+	<p>More over, any unicode character can be esacaped with <code>'\u'</code> followed by six hexadecimal digits corresponding to the unicode number.
+		For example <code>\u01F60A</code> correspond to the 😊 character.</p>
+
+
+	<h2>Full syntax definition</h2>
+
+	<p>The GS syntax is formalized in three parts :</p>
+	<ul>
+		<li>A grammar of rules for combining tokens</li>
+		<li>A set of tokens defined by regular expressions</li>
+		<li>Two specific supplementary rules for parser implementations</li>
+	</ul>
+
+	<h3>Grammar</h3>
+
+	<code-mirror mode="dtd" class="border">
+	<pre>GS = (nodeLike s*)*
+
+nodeLike = node | simpleNode
+simpleNode = body | rawCharacters
+
+node = '<' specialType? name? attr* s* (body attr* s*)? '>'
+
+name = rawCharacters | quotedStr | boundedStr
+attr = s* name (s* '=' s* value)?
+value = rawCharacters | formattable? quotedStr | formattable? boundedStr
+
+body = bodyList | bodyText | bodyMap | bodyMixed
+
+bodyList = '[' s* (nodeLike s*)* ']'
+
+bodyText = formattable? (quotedText | boundedText)
+
+bodyMap = '{' s* ((prop | node) s*)* '}'
+prop = name ('=' s* nodeLike)?
+
+bodyMixed = formattable? '`' (mixedText | node)* '`'
+
+specialType = '#' | '&' | '%' | '?'
+formattable = '~'
+	</pre>
+	</code-mirror>
+
+
+	<h3>Tokens</h3>
+
+	<p>Tokens are defined as regular expressions</p>
+	<code-mirror mode="javascript" class="border">
+<pre>s = /[ \t\n\r]/
+
+rawCharacters = /[a-zA-Z0-9_:\-.\/]+/
+
+quotedStr = /'([^'\\]|\\['"`&lt;bfnrt]|\\u[0-9A-Fa-f]{6})*'/
+boundedStr = /\|[^']*'.*\|[^']*'/
+
+quotedText = /"([^"\\]|\\['"`&lt;bfnrt]|\\u[0-9A-Fa-f]{6})*"/
+boundedText = /![^"]*".*![^"]*"/
+
+mixedText = /([^<\\]|\\['"`&lt;bfnrt]|\\u[0-9A-Fa-f]{6})*/
+</pre>
+	</code-mirror>
+
+
+	<h3>Supplementary rules</h3>
+	<p>Two features in GS need specific rules:</p>
+	<ul>
+		<li>The <code>mixedText</code> regular expression must only be applied in the <code>bodyMixed</code> rule.
+			A GS parser implementation needs to be context sensitive just at this point.
+		</li>
+		<li>For <code>boundedStr</code> and <code>boundedText</code> tokens, the start boundary and the end boundary must be equals.
+			The regular expression do not permit this check. For example, <code>boundedText</code>, the boundary is defined by
+			<code>![^"]*"</code>, the same sequence of characters must start the token and end it.
+			A GS parser implementation needs to use a custom tokenizer just for this two tokens.
+		</li>
+	</ul>
+
+	<p>Except these two specific cases, implementing an efficient GS parser is straightforward.
+		The GS syntax doesn't need speculatives try and rewind strategies (like HTML).</p>
+</main>
+</body>
+</html>

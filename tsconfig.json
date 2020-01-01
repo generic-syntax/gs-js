@@ -1,0 +1,32 @@
+{
+  "compilerOptions": {
+	"baseUrl": ".",
+	"lib": [
+	  "DOM",
+	  "ES2017",
+	  "DOM.Iterable"
+	],
+	"target": "es2017",
+	"module": "esnext",
+	"allowJs": false,
+	"sourceMap": true,
+	"forceConsistentCasingInFileNames": false,
+	"removeComments": true,
+	"newLine": "lf",
+	"alwaysStrict": true,
+	"noImplicitAny": true,
+	"noImplicitThis": true,
+	"jsx": "react",
+	"reactNamespace": "JSX"
+  },
+  "include": [
+	"api/**/*.ts",
+	"test/**/*.ts",
+	"test/**/*.tsx",
+	"site/**/*.ts",
+	"site/**/*.tsx",
+	"src/**/*.ts",
+	"debug/**/*.ts",
+	"debug/**/*.tsx"
+  ]
+}
