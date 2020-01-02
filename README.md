@@ -13,3 +13,4 @@ You will find in this reporsitory:
 
 **This is a work in progress, you should not use it in production for now.**
 
+Feel free to open issues, pull requests or send us an email at contact@generic-syntax.org.
