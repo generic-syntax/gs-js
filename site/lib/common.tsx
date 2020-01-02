@@ -28,7 +28,7 @@ window.addEventListener("load", async () => {
 	//Footer
 	main.insertAdjacentElement('afterend', <footer>
 		<div id="legal">
-			<div>© generic-syntax.org and contributors</div>
+			<div>©2020 generic-syntax.org and contributors</div>
 			<div><a href="contact@generic-syntax.org">contact@generic-syntax.org</a></div>
 		</div>
 		<a id="license" href="http://creativecommons.org/licenses/by/4.0/" target="_blank" title="Content licensed under Creative Commons Attribution 4.0 International license">
