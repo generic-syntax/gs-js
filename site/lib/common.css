@@ -1,10 +1,11 @@
 :root {
 	--border-color: #e2d0be;
+	--main-color: #700388;
 	font-family: "Libre Franklin", "Helvetica Neue", helvetica, arial, sans-serif;
 }
 
 html {
-	background-color: #f7a600;
+	background-color: #e09200;
 	padding: .5em;
 }
 
@@ -19,8 +20,9 @@ h1 {
 	margin: 0;
 	text-align: center;
 	padding: .5em 0;
-	background-color: black;
+	background: black url(../res/gs.svg) no-repeat .5em / 2em;
 	color: #dddddd;
+	padding-inline-start: 3em;
 }
 
 header,
@@ -43,12 +45,12 @@ nav > a {
 	display: inline-block;
 	text-decoration: none;
 	padding: .5em .7em;
-	color: #700388;
+	color: var(--main-color);
 }
 
 nav > a.current {
 	color: #846388;
-	border-bottom: 3px solid #700388;
+	border-bottom: 3px solid var(--main-color);
 }
 
 
@@ -70,7 +72,7 @@ footer {
 #github {
 	flex: 1 1 auto;
 	display: block;
-	color: #033300;
+	color: var(--main-color);
 	text-decoration: none;
 	padding: .5em 1em;
 	font-size: 80%;
@@ -93,7 +95,7 @@ main {
 }
 
 h2 {
-	color: #004018;
+	color: var(--main-color);
 	margin: 1.5em 0 1em 0;
 }
 
@@ -142,11 +144,11 @@ code {
 }
 
 .warn {
-	color: #bd0000;
+	color: #9d0000;
 }
 
 a {
-	color: #375a3c;
+	color: var(--main-color)
 }
 
 @media (max-width: 40em) {

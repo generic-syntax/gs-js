@@ -23,14 +23,14 @@
 
 .color2 {
 	--color: #2b3034;
-	--panel-bgcolor: rgba(244, 249, 251, 0.5);
-	--panel-bordercolor: #cae0e3;
+	--panel-bgcolor: rgba(248, 247, 251, 0.5);
+	--panel-bordercolor: #d3dee3;
 }
 
 .color3 {
 	--color: #212b21;
-	--panel-bgcolor: rgba(244, 254, 247, 0.5);
-	--panel-bordercolor: #d3e9d6;
+	--panel-bgcolor: rgba(254, 245, 245, 0.5);
+	--panel-bordercolor: #faf0f8;
 }
 
 .color4 {

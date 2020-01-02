@@ -29,7 +29,7 @@ window.addEventListener("load", async () => {
 	main.insertAdjacentElement('afterend', <footer>
 		<div id="legal">
 			<div>©2020 generic-syntax.org and contributors</div>
-			<div><a href="contact@generic-syntax.org">contact@generic-syntax.org</a></div>
+			<div><a href="mailto:contact@generic-syntax.org">contact@generic-syntax.org</a></div>
 		</div>
 		<a id="license" href="http://creativecommons.org/licenses/by/4.0/" target="_blank" title="Content licensed under Creative Commons Attribution 4.0 International license">
 			<img src="res/cc.png"/><img src="res/by.png"/>
