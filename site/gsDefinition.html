@@ -157,7 +157,7 @@ rawCharacters
 	<p>When names or values use a character not allowed in <code>rawCharacters</code>, it must be delimited by a single quote.
 		It is defined by a regular expression:</p>
 	<div class="syntax"><span class="symbol">quotedStr</span> = <span class="symbol">'([^'\\]|\\['"`&lt;bfnrt]|\\u[0-9A-Fa-f]{6})*'</span></div>
-	<p>Characters in this sequence can be espcaped by a <code>'\'</code>. See <a href="#commonEscapingRule">Commons quoted escaping rules</a>.</p>
+	<p>Characters in this sequence can be escaped by a <code>'\'</code>. See <a href="#commonEscapingRule">Commons quoted escaping rules</a>.</p>
 
 	<h3 id="boundedStr">boundedStr</h3>
 	<p>String delemited by a boundary can be used in names and values.</p>
@@ -176,7 +176,7 @@ rawCharacters
 	<p>Characters in this sequence can be espcaped by a <code>'\'</code>. See <a href="#commonEscapingRule">Commons quoted escaping rules</a>.</p>
 
 	<h3 id="boundedText">boundedText</h3>
-	<p>Text delemited by a boundary can be used in the <code>bodyText</code>.</p>
+	<p>Text delimited by a boundary can be used in the <code>bodyText</code>.</p>
 	<div class="syntax"><span class="symbol">boundedText</span> = '<span class="char">!</span>' <span class="symbol">boundary</span>? '<span class="char">"</span>' <span class="symbol">any</span> '<span class="char">!</span>' <span
 			class="symbol">boundary</span>? '<span class="char">"</span>'
 	</div>
@@ -189,7 +189,7 @@ rawCharacters
 	<h3 id="mixedText">mixedText</h3>
 	<p>Mixed text is used in the <code>bodyMixed</code>. It is defined by a regular expression:</p>
 	<div class="syntax"><span class="symbol">mixedText</span> = <span class="symbol">([^<\\]|\\['"`&lt;bfnrt]|\\u[0-9A-Fa-f]{6})*</span></div>
-	<p>Characters in this sequence can be espcaped by a <code>'\'</code>. See <a href="#commonEscapingRule">Commons quoted escaping rules</a>.</p>
+	<p>Characters in this sequence can be escaped by a <code>'\'</code>. See <a href="#commonEscapingRule">Commons quoted escaping rules</a>.</p>
 
 	<h3 id="commonEscapingRule">Commons quoted escaping rules</h3>
 	<p>In <code>quotedStr</code>, <code>quotedText</code> and <code>mixedText</code> some characters can be escaped:</p>
@@ -199,9 +199,9 @@ rawCharacters
 		<li><code>\f</code> escape the form feed <code>0C</code> unicode character</li>
 		<li><code>\n</code> escape the line feed <code>0A</code> unicode character</li>
 		<li><code>\r</code> escape the carriage return <code>0D</code> unicode character</li>
-		<li><code>\t</code> escape the tabultaion <code>09</code> unicode character</li>
+		<li><code>\t</code> escape the tabulation <code>09</code> unicode character</li>
 	</ul>
-	<p>More over, any unicode character can be esacaped with <code>'\u'</code> followed by six hexadecimal digits corresponding to the unicode number.
+	<p>More over, any unicode character can be escaped with <code>'\u'</code> followed by six hexadecimal digits corresponding to the unicode number.
 		For example <code>\u01F60A</code> correspond to the 😊 character.</p>
 
 
@@ -278,7 +278,7 @@ mixedText = /([^<\\]|\\['"`&lt;bfnrt]|\\u[0-9A-Fa-f]{6})*/
 	</ul>
 
 	<p>Except these two specific cases, implementing an efficient GS parser is straightforward.
-		The GS syntax doesn't need speculatives try and rewind strategies (like HTML).</p>
+		The GS syntax doesn't need speculative try and rewind strategies (like HTML).</p>
 </main>
 </body>
 </html>
