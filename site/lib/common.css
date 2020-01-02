@@ -1,15 +1,15 @@
 :root {
-	--border-color: #747879;
+	--border-color: #e2d0be;
 	font-family: "Libre Franklin", "Helvetica Neue", helvetica, arial, sans-serif;
 }
 
 html {
-	background-color: #9eaf99;
+	background-color: #f7a600;
 	padding: .5em;
 }
 
 body {
-	background-color: #fBfBfB;
+	background-color: #fffffb;
 	color: #162917;
 	margin: 0;
 	padding: 0;
@@ -43,12 +43,12 @@ nav > a {
 	display: inline-block;
 	text-decoration: none;
 	padding: .5em .7em;
-	color: #3300aa;
+	color: #700388;
 }
 
 nav > a.current {
-	color: #706489;
-	border-bottom: 3px solid #3300aa;
+	color: #846388;
+	border-bottom: 3px solid #700388;
 }
 
 

@@ -7,11 +7,12 @@
 .panel {
 	display: flex;
 	flex-wrap: wrap;
-	margin: 1em 3px 1em 0;
+	margin: 2em 3px 1em 0;
 	border: 1px solid var(--panel-bordercolor);
 	background-color: var(--panel-bgcolor);
-	box-shadow: 3px 3px 5px var(--panel-bordercolor);
+	box-shadow: 3px 3px 5px #bdbdbd;
 	color: var(--color);
+	--border-color: var(--panel-bordercolor);
 }
 
 .color1 {
