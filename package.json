@@ -1,25 +1,25 @@
 {
-  "name": "generic-syntax-js",
-  "version": "0.0.1",
-  "private": true,
-  "devDependencies": {
-	"@types/jasmine": "3.3.13",
-	"@types/node": "12.6.6",
-	"jasmine-core": "3.4.0",
-	"karma": "4.2.0",
-	"karma-chrome-launcher": "3.0.0",
-	"karma-firefox-launcher": "1.1.0",
-	"karma-jasmine": "2.0.1",
-	"karma-junit-reporter": "1.2.0",
-	"typescript": "3.7.2",
-	"webpack": "4.41.5",
-	"webpack-cli": "^3.3.10",
-	"gulp": "4.0.2",
-	"webpack-stream": "5.2.1",
-	"gulp-rimraf": "1.0.0"
-  },
-  "scripts": {
-	"runInstall": "npm install",
-	"buildSite": "gulp"
-  }
+	"name": "generic-syntax-js",
+	"version": "0.0.1",
+	"private": true,
+	"devDependencies": {
+		"@types/jasmine": "3.3.13",
+		"@types/node": "12.6.6",
+		"jasmine-core": "3.4.0",
+		"karma": "4.2.0",
+		"karma-chrome-launcher": "3.0.0",
+		"karma-firefox-launcher": "1.1.0",
+		"karma-jasmine": "2.0.1",
+		"karma-junit-reporter": "1.2.0",
+		"typescript": "3.7.2",
+		"glob": "7.1.6",
+		"terser": "4.6.2",
+		"fs-extra": "8.1.0",
+		"rollup": "1.29.0"
+	},
+	"scripts": {
+		"runInstall": "npm install",
+		"build": "tsc",
+		"buildSite": "node scripts/buildSite.js"
+	}
 }
