@@ -16,9 +16,10 @@ const terser = require('terser');
 
 		const bundle = await rollup.rollup({input: `${siteDir}/mod/index.js`});
 		const {output: [{code: bundledCode}]} = await bundle.generate({});
-		const {code: minifiedCode} = terser.minify(bundledCode);
-		await fs.outputFile(`${distDir}/mod/index.js`, minifiedCode);
+		const minifiedResult = terser.minify(bundledCode);
+		if (minifiedResult.error) throw minifiedResult.error;
+		await fs.outputFile(`${distDir}/mod/index.js`, minifiedResult.code);
 	} catch (e) {
-		console.error(e);
+		console.error(e.stack || e);
 	}
 })();
