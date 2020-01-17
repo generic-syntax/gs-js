@@ -11,7 +11,7 @@
 <h1>Generic-Syntax for Object Mapping</h1>
 
 <main>
-	<h2>Lack of JSON and XML</h2>
+	<h2>JSON and XML shortcomings</h2>
 
 	<div class="cols">
 
@@ -63,24 +63,24 @@
 		</div>
 	</div>
 
-	<p>JSON-LD is today one of the best for serializing a typed objects graph.
-		But the incapability to name objects in JSON has two flaws:</p>
+	<p>JSON-LD is today one of the best languages for serializing a typed objects graph.
+		But the inability to name objects in JSON has two flaws:</p>
 	<ul>
 		<li>The <code>@type</code> property affects readability.</li>
-		<li>The absence of named header enriched with attributes prevents efficient event driven parsing for directly instantiate typed objects
-			(and for avoid to instantiate costly intermediate generic objects).
+		<li>The absence of named headers enriched with attributes prevents efficient event driven parsing of directly instantiated typed objects
+			(and avoiding instantiating costly intermediate generic objects).
 		</li>
 	</ul>
 
-	<p>On the over side, XML lacks of a key-node pair structure and is not well suited for this purpose.</p>
+	<p>On the other hand, XML lacks a key-node pair structure and is not well suited for this purpose.</p>
 
 	<p>GS solves these problems by combining JSON object properties and XML named object features.</p>
 
 	<h2>GS-OM language</h2>
 
-	<p>GS-OM is a secured library for building and serializing a complex and recursive graph of typed objects.
+	<p>GS-OM is a secure library for building and serializing complex and recursive graphs of typed objects.
 		At parsing stage, according to its configuration, typed objects are instantiated, properties are assigned
-		and methods explicitly authorized can be called.</p>
+		and explicitly authorized methods can be called.</p>
 
 	<gs-viewer class="border scroll">
 <pre>
@@ -118,8 +118,8 @@
 </pre>
 	</gs-viewer>
 
-	<p>GS-OM use instruction GS node type <code><%></code> for link objects and call methods at the building step.</p>
-	<p><em class="warn">GS-OM is a project, currently not implemented.</em></p>
+	<p>GS-OM uses the GS node type <code><%></code> instruction to link objects and call methods at the building stage.</p>
+	<p><em class="warn">GS-OM is a project, it is currently not implemented.</em></p>
 </main>
 </body>
 </html>

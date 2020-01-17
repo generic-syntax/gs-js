@@ -29,7 +29,7 @@
 	<ul>
 		<li>Quoting keys is not always required</li>
 		<li>Comma separator is removed</li>
-		<li>Null value can be omitted</li>
+		<li>Null values can be omitted</li>
 		<li>GS size is smaller</li>
 	</ul>
 
@@ -113,7 +113,7 @@ not in GS."
 		</gs-viewer>
 	</div>
 
-	<p>It'is also really simple to comment a json fragment with preserving the structure or force the fragment as raw text.</p>
+	<p>It is also really simple to comment a json fragment while preserving the structure or force the fragment as raw text.</p>
 
 	<h3>Multi root auto-boxing</h3>
 
@@ -153,15 +153,15 @@ members=[
 }></pre>
 		</gs-viewer>
 	</div>
-	<p>These two GS are logically identical and will produce the same tree of generic objects with standard parsing.</p>
-	<p>But in an object mapping purpose, you need to construct different typed objects depending on some properties: <code>User</code> and
+	<p>These two GS fragments are logically identical and will produce the same tree of generic objects with standard parsing.</p>
+	<p>But in an object mapping context, you need to construct different typed objects depending on certain properties: <code>User</code> and
 		<code>Group</code> types in this example.</p>
 	<p>In the first classic form, similar to JSON, event driven parsing is not really useful and an intermediate tree of generic objects is
 		generally constructed first and then is mapped to the typed objects.</p>
-	<p>The optimized second form pull up some properties in the header attributes and permit a simple and efficient event driven parsing with direct
+	<p>The optimized second form pulls up certain properties in the header attributes and permits a simple and efficient event driven parsing with direct
 		typed object construction. Have a look to <a href="gs-om.html">GS-OM</a> a more powerful Generic-Syntax for object mapping.</p>
 
-	<h2>How GS works ?</h2>
+	<h2>How does GS work?</h2>
 	<p>In GS all is node and a node has this form:</p>
 
 	<pre>
@@ -169,9 +169,9 @@ members=[
 </pre>
 
 	<p>The <code>body</code> part can be a list <code>[]</code>, a map <code>{}</code>, or a text <code>""</code> (or without
-		quotes and limited characters set used in GS-ON profile for null, boolean and number values).</p>
+		quotes and limited character set used in GS-ON profile for null, boolean and number values).</p>
 
-	<p>Each node part is optionnal. When the node has no <code>specialType</code> (like comments <code>#</code>), no <code>name</code>,
+	<p>Each node part is optional. When the node has no <code>specialType</code> (such as comments <code>#</code>), no <code>name</code>,
 		and no <code>attributes</code> but just a <code>body</code>, the <code>'<'</code> and <code>'>'</code> marks can be ommited and you
 		get the GS-ON profile.</p>
 

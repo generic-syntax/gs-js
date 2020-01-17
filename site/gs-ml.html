@@ -52,9 +52,9 @@
 	<h3>Syntax overhead</h3>
 	<p>GS is sensibly optimized in minified form:</p>
 	<ul>
-		<li>Tag name are not repeated in the close tag.</li>
+		<li>Tag names are not repeated in the close tag.</li>
 		<li>Quotes are not required for single word values.</li>
-		<li>In XML, value for boolean attributes are not required.</li>
+		<li>In XML, a value for boolean attributes is not required.</li>
 	</ul>
 
 	<h3>Mixed content and DOM instantiation overhead</h3>
@@ -64,13 +64,13 @@
 ]></pre>
 	</ml-gsml-compare>
 
-	<p>XML and HTML do not differentiate insignificant white spaces for human readability (indentations) and significant spaces text nodes.</p>
-	<p>In this example the space between <code>em</code> and <code>span</code> tags is semantically needed whereas space between <code>div</code>
+	<p>XML and HTML do not differentiate insignificant white spaces for human readability (indentations) and significant spaces in text nodes.</p>
+	<p>In this example the space between the <code>em</code> and <code>span</code> tags is semantically needed whereas space between <code>div</code>
 		and <code>p</code> is not.</p>
-	<p>That's why when DOM is instantiated, white spaces text nodes are always built but many are useless
+	<p>That's why when the DOM is instantiated, white spaces in text nodes are always built but many are useless
 		and consumes unnecessarily time and memory.</p>
 
-	<p>In GS, authors use different body types node:</p>
+	<p>In GS, authors use different body type nodes:</p>
 	<ul>
 		<li>In the list body type <code>[]</code>, white spaces are never significant and never be instantiated (as in JSON)</li>
 		<li>In the mixed body type <code>``</code>, all characters sequence between nodes <code><></code> define a significant text node.
@@ -90,20 +90,20 @@
 
 	<h3>Mixed-content and editors auto-formatting</h3>
 
-	<p>Editors automatic re-format and re-indent features are really useful. But these features don't work perfectly for XML and HTML due
-		to undifferentiating text type nodes:
+	<p>Text editor automatic re-formating and re-indenting features are really useful. But these features don't work perfectly for XML and HTML due
+		to undifferentiated text type nodes:
 	<ul>
 		<li>pure white spaces,</li>
-		<li>text that can be re-indented (like paragraph)</li>
+		<li>text that can be re-indented (like paragraphs),</li>
 		<li>and text nodes where spaces must be preserved (like code fragment in <code>pre</code> tags in html).</li>
 	</ul>
 	</p>
 
-	<p>In XML, this issue is resolved with the declarative and inelegant <code>xml:space="preserve"</code> attribute, but its inheritable behavior contrary the modularity
+	<p>In XML, this issue is resolved with the declarative and inelegant <code>xml:space="preserve"</code> attribute, but its inheritable behavior is contrary to the modularity
 		principle and is source of regressions (those who edit big xml files like xsl where some parts must never be re-indented well known this issue...)</p>
 
 	<p>Since HTML4 is a <a href="https://en.wikipedia.org/wiki/Domain-specific_language">DSL</a>, editors must know each tag name
-		and the issue is partially worked around (while authors don't intent to override standard html tags with <code>white-space</code> css property).</p>
+		and the issue is partially worked around (as long as authors don't intend to override standard html tags with the <code>white-space</code> css property).</p>
 
 	<p>In HTML5 with web-components the issue become more important because there is no way to explicitly specify the break-space behavior:</p>
 
@@ -118,7 +118,7 @@
 &lt;/ml-gsml-compare></pre>
 	</code-mirror>
 
-	<p>This html fragment with a web-component is issued of this page (see the first example). The <code>&lt;pre></code> tag
+	<p>This html fragment with a web-component is issued from this page (see the first example). The <code>&lt;pre></code> tag
 		in the <code>&lt;ml-gsml-compare></code> web-component is useless but is added just for blocking the auto text indentation in editors!</p>
 
 	<p>Here is the same example if this html page was written in GS, <code>&lt;pre></code> tag can be omitted because body node can be correctly typed in GS:</p>
@@ -142,7 +142,7 @@
 		</gs-viewer>
 	</div>
 
-	<h3>Comments restrictions and imbrication</h3>
+	<h3>Comment restrictions and imbrication</h3>
 	<ml-gsml-compare format="gsml" output="html">
 <pre>
 &lt;section [
@@ -283,12 +283,12 @@
 
 	<h3>Generic parsing and serializing</h3>
 
-	<p>As opposed to XML and JSON, the main html issue is the needs of dedicated and complex parser and serializer with many special edge cases.</p>
+	<p>As opposed to XML and JSON, the main html issue is the need for a dedicated and complex parser and serializer with many special edge cases.</p>
 
 	<p>GS offers a generic and simple syntax: parsers and serializers can easily be implemented in many languages.
 		For example a GS event driven parser implemented in Typescript is less than 700 lines of code (11kb minified js), and a minified serializer is about 200 lines.</p>
 
-	<p>Are these HTML dedicated parsing rules useful for authors ?</p>
+	<p>Are these HTML dedicated parsing rules useful for authors?</p>
 
 	<ml-gsml-compare format="gsml" output="html">
 <pre>&lt;script !"
@@ -297,11 +297,11 @@
 	</ml-gsml-compare>
 
 	<p>The biggest useful dedicated HTML syntax exception is the script tag that allows any characters without escaping until the <code>&lt;/script></code> sequence.</p>
-	<p>In GS, the generic useful solution is the bounded escaping: the content between the boundaries is raw and never escaped.
+	<p>In GS, the generic useful solution is bounded escaping: the content between the boundaries is raw and never escaped.
 		<code>!"</code> is the simplest boundary, if this character sequence is present in the content, any character (except <code>"</code>)
 		can be inserted in the middle: <code>!!"</code>, <code>!."</code>, <code>!°"</code>, <code>!xyz"</code>, <code>!☠"</code>...</p>
 
-	<p>The GS bounded escaping can also be useful where HTML do not offers good solutions, like in textarea:</p>
+	<p>The GS bounded escaping can also be useful where HTML does not offers good solutions, like in a textarea:</p>
 	<ml-gsml-compare format="gsml" output="html">
 <pre>&lt;textarea !"
   &lt;svg:svg xmlns:svg="http://www.w3.org/2000/svg" version="1.1" viewBox="0 0 32 32">
@@ -326,7 +326,7 @@
 
 	<p>One of the reasons for the failure of XHTML is the extreme syntactic constraint (resolved by HTML).</p>
 	<p>XML is a generic and simplified SGML (the common XML and HTML ancestor), but is not flexible enough.
-		Thirty years after, GS can propose a more elegant simple and generic syntax.</p>
+		Thirty years later, GS proposes a more elegant, simple and generic syntax.</p>
 
 	<h2>Do it in GS (you can't in XML nor HTML)</h2>
 
@@ -352,12 +352,12 @@
 </pre>
 	</gs-viewer>
 
-	<p>As opposed to html and xml, in GS "comments" and "processing instructions" (splitted in "instruction", "metas" and "syntax" in GS) are not restricted to text.</p>
-	<p>In GS comments <code>&lt;#></code>, instructions <code>&lt;%></code>, metas <code>&lt;&></code> and syntax <code>&lt;?></code> are regular nodes with just a special type in addition.</p>
+	<p>As opposed to html and xml, in GS "comments" and "processing instructions" (split into "instruction", "meta" and "syntax" in GS) are not restricted to text.</p>
+	<p>In GS comments <code>&lt;#></code>, instructions <code>&lt;%></code>, meta <code>&lt;&></code> and syntax <code>&lt;?></code> are regular nodes with just a special type in addition.</p>
 	<p>Comments can be as simple as text or highly structured (see <code>&lt;#THREAD></code> example above).</p>
 
-	<p>The <code>&lt;&http://schema.org/Product></code> example illustrate how semantic metadatas could be inserted in a presentation page as an alternative
-		of <a href="https://en.wikipedia.org/wiki/JSON-LD">JSON-LD</a> or <a href="https://en.wikipedia.org/wiki/Microdata_(HTML)">Microdatas</a></p>
+	<p>The <code>&lt;&http://schema.org/Product></code> example illustrates how semantic metadata could be inserted in a presentation page as an alternative
+		of <a href="https://en.wikipedia.org/wiki/JSON-LD">JSON-LD</a> or <a href="https://en.wikipedia.org/wiki/Microdata_(HTML)">Microdata</a></p>
 
 	<p>Note: due to DOM limitations, these richer comments and metas nodes can't be instantiated in DOM nodes and are skipped in the DOM building process.</p>
 
@@ -374,7 +374,7 @@
 	<p>Of course, currently you can't use these free names if you want to transform your GS to DOM or XML/HTML.</p>
 
 	<h3>Multi-root document</h3>
-	<p>Like HTML, but as opposed to XML, GS document (or file) does not impose a single root element and can contain a set of nodes (see the examples above).
+	<p>Like HTML, but unlike XML, a GS document (or file) does not impose a single root element and can contain a set of nodes (see the examples above).
 		It can be instantiated in DOM as a <code>DocumentFragment</code>.</p>
 
 	<h3>Tail attributes</h3>
@@ -386,8 +386,8 @@
 </pre>
 	</gs-viewer>
 
-	<p>In event driven streamed processing, it could be useful to add attributes to a node after the body have been processed like a computed size, CRC, hash key,
-		or a validated transaction id. It is possible in GS with adding attributes in tail node.</p>
+	<p>In event driven programming, it could be useful to add attributes to a node after the body have been processed such as a computed size, CRC, hash key,
+		or a validated transaction id. It is possible in GS by adding attributes to a node's tail.</p>
 	<p>When parsed as DOM the tail attributes are preserved and merged with head attributes.</p>
 
 </main>
