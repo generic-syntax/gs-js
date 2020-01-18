@@ -84,20 +84,17 @@
 	<gs-viewer class="border scroll">
 <pre>
 &lt;?OM>
-&lt;User account='2197' {
-  <%id"JOM">
+&lt;User account=2197 %id=JOM {
   name= "John Merting"
   chief= <%ref"MAD">
   groups= [
     <%ref"mgrs">
   ]
 }>
-&lt;User account='2123' {
-  <%id"MAD">
+&lt;User account=2123 %id=MAD {
   name= "Marc Dublof"
   groups=[
-    &lt;Group id='36564' {
-      <%id"admins">
+    &lt;Group id=36564 %id=admins {
       name= "Administrators"
     }>
   ]
@@ -107,8 +104,7 @@
   	14
   ]>
 }>
-&lt;Group id='35' {
-  <%id"mgrs">
+&lt;Group id=35 %id=mgrs{
   name= "Managers"
 }>
 <%with ref=admins {
@@ -117,7 +113,7 @@
 </pre>
 	</gs-viewer>
 
-	<p>GS-OM uses the GS node type <code><%></code> instruction to link objects and call methods at the building stage.</p>
+	<p>GS-OM uses the GS attribute and node special type <code>%</code> <em>instruction</em> to link objects and call methods at the building stage.</p>
 	<p><em class="warn">GS-OM is a project, it is currently not implemented.</em></p>
 </main>
 </body>

@@ -89,6 +89,11 @@ describe("gsParser", function () {
 		parseTest(`<|'node|'|'att|'|°'a|°'=|x'val|x'!^"text!^">`);
 	});
 
+
+	it("specialTypes", function () {
+		parseTest("<#aa#b=1%'c'?d=2><% #b=1%'c'?d=2&''=meta><&'x'#|'a|'>");
+	});
+
 });
 
 function parseTest(src: string, res?: string) {

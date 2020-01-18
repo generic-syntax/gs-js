@@ -16,9 +16,9 @@ export interface IGsLogicalHandler {
  * Low level flat stream event-driven API for whitespaces handling.
  */
 export interface IGsSyntaxHandler {
-	headNode(name: IGsName, specialType?: gsSpecialNodeType): void
+	headNode(name: IGsName, specialType?: gsSpecialType): void
 
-	attribute(name: IGsName, value: IGsValue, spBeforeEq?: string, spAfterEq?: string): void
+	attribute(name: IGsName, value: IGsValue, specialType?: gsSpecialType | null, spBeforeEq?: string, spAfterEq?: string): void
 
 	text(text: IGsEventText, inBodyMixed?: boolean): void
 
@@ -99,6 +99,7 @@ export interface IGsEventNode extends IGsName {
  * Attribute definition used in IGsLogicalHandler
  */
 export interface IGsEventAtt extends IGsName, IGsValue {
+	readonly attType: gsSpecialType | null
 	readonly name: string
 	readonly nameEsc: gsEscaping
 	readonly value: string | null
@@ -111,9 +112,9 @@ export interface IGsEventAtt extends IGsName, IGsValue {
 
 export type gsEscaping = /*raw*/ false |  /*quoted*/ true |  /*bounded*/ string
 
-export type gsSpecialNodeType = /*Comment*/ '#' | /*Meta*/ '&' | /*Instruction*/ '%' |  /*Syntax*/ '?'
+export type gsSpecialType = /*Comment*/ '#' | /*Meta*/ '&' | /*Instruction*/ '%' |  /*Syntax*/ '?'
 
-export type gsNodeType = gsSpecialNodeType | /*normal node*/ '' | /*simple node*/ null
+export type gsNodeType = gsSpecialType | /*standard node*/ null | /*simple node*/ ''
 
 export type gsBodyType = /*empty*/ '' |  /*list*/'[' | /*map*/ '{' | /*text*/ '"' | /*mixed*/ '`'
 

@@ -62,7 +62,7 @@ export class GsFromJson<H extends IGsLogicalHandler> extends GsLogicalEventProdu
 		switch (typeof json) {
 		case "object":
 			if (json === null) {
-				node = this.pushNode(null, prop);
+				node = this.pushNode('', prop);
 				node.bodyType = '"';
 				this.handler.startNode(node);
 				this.txt.value = "null";
@@ -70,13 +70,13 @@ export class GsFromJson<H extends IGsLogicalHandler> extends GsLogicalEventProdu
 				this.handler.bodyText(this.txt, node);
 				this.popNode(node);
 			} else if (Array.isArray(json)) {
-				node = this.pushNode(null, prop);
+				node = this.pushNode('', prop);
 				node.bodyType = '[';
 				this.handler.startNode(node);
 				for (let i = 0; i < json.length; i++) this.push(this.objToJson(json[i]));
 				this.popNode(node);
 			} else {
-				node = this.pushNode(null, prop);
+				node = this.pushNode('', prop);
 				node.bodyType = '{';
 				this.handler.startNode(node);
 				const p = this.getProp();
@@ -96,7 +96,7 @@ export class GsFromJson<H extends IGsLogicalHandler> extends GsLogicalEventProdu
 			}
 			break;
 		case "string":
-			node = this.pushNode(null, prop);
+			node = this.pushNode('', prop);
 			node.bodyType = '"';
 			this.handler.startNode(node);
 			this.txt.value = json as string;
@@ -107,7 +107,7 @@ export class GsFromJson<H extends IGsLogicalHandler> extends GsLogicalEventProdu
 		case "number":
 		case "bigint":
 		case "boolean":
-			node = this.pushNode(null, prop);
+			node = this.pushNode('', prop);
 			node.bodyType = '"';
 			this.handler.startNode(node);
 			this.txt.value = json.toString();
@@ -151,7 +151,7 @@ export class GsToJsonLH implements IGsLogicalHandler {
 			case "~`":
 				v = [];
 				break;
-			default: //'"' "":
+			default: //text or empty body node
 				return;
 			}
 		}
@@ -171,7 +171,7 @@ export class GsToJsonLH implements IGsLogicalHandler {
 	}
 
 	endNode(node: IGsEventNode): void {
-		if (!node.nodeType && (node.bodyType === '"' || node.bodyType === "")) return;
+		if (!node.nodeType && (node.bodyType === '"' || node.bodyType === "")) return; //text or empty body node
 		const last = --this.ancestors.length - 1;
 		if (last >= 0) this.json = this.ancestors[last];
 	}

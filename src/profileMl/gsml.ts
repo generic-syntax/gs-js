@@ -138,11 +138,11 @@ export class GsFromDomXml<H extends IGsLogicalHandler> extends GsLogicalEventPro
 		let n: GsEventNode;
 		switch (node.nodeType) {
 		case Node.ELEMENT_NODE:
-			n = this.pushNode("", undefined);
+			n = this.pushNode(null, undefined);
 			this.setEltName(n, node as Element);
 			n.nameEsc = this.escapingName(node);
 			for (const att of (node as Element).attributes) {
-				let a = n.pushAtt(false);
+				let a = n.pushAtt(null, false);
 				this.setAttName(n, a, att);
 				a.nameEsc = this.escapingAttName(node, att);
 				a.value = att.value;
@@ -173,7 +173,7 @@ export class GsFromDomXml<H extends IGsLogicalHandler> extends GsLogicalEventPro
 		case Node.TEXT_NODE:
 		case Node.CDATA_SECTION_NODE:
 			if (whiteSpaces.test(node.nodeValue) && this.skipWhiteSpace(node as Text, this.peekNode())) break;
-			n = this.pushNode(null, undefined);
+			n = this.pushNode('', undefined);
 			n.name = null;
 			n.bodyType = '"';
 			this.txt.value = node.nodeValue;
@@ -326,7 +326,7 @@ export class GsToDomXmlLH implements IGsLogicalHandler {
 
 
 	startNode(node: IGsEventNode): void {
-		if (node.nodeType !== "") return;
+		if (node.nodeType !== null) return;
 		switch (node.bodyType) {
 		case '"':
 			if (!node.name) return;//pure textNode
@@ -364,7 +364,7 @@ export class GsToDomXmlLH implements IGsLogicalHandler {
 	}
 
 	endNode(node: IGsEventNode): void {
-		if (node.nodeType !== "" || (node.bodyType === '"' && !node.name)) return; //comment, pi, or pure textNode
+		if (node.nodeType !== null || (node.bodyType === '"' && !node.name)) return; //comment, pi, or pure textNode or GS node xml incompatible
 		if (this.parent instanceof Element) {
 			for (let a = node.firstTailAtt; a; a = a.next) {
 				this.parent.setAttribute(a.name, a.value);

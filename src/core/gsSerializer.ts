@@ -1,4 +1,4 @@
-import {gsEscaping, gsIndent, gsSpecialNodeType, IGsEventNode, IGsEventText, IGsLogicalHandler, IGsName, IGsSerializeOptions, IGsSyntaxHandler, IGsValue, rawChars} from "../../api/gs.js";
+import {gsEscaping, gsIndent, gsSpecialType, IGsEventNode, IGsEventText, IGsLogicalHandler, IGsName, IGsSerializeOptions, IGsSyntaxHandler, IGsValue, rawChars} from "../../api/gs.js";
 import {IGsWriter} from "../../api/gsSerializer.js";
 import {GsLogicalEventProducer} from "./gsLogicalHandler.js";
 import {GsChainedSH, GsLH2SH} from "./gsSyntaxHandler.js";
@@ -16,11 +16,11 @@ export class GsMinifiedLH<SH extends IGsSyntaxHandler> extends GsLH2SH<SH> {
  */
 export class GsPrettyLH<SH extends IGsSyntaxHandler> extends GsLH2SH<SH> {
 	startNode(node: IGsEventNode): void {
-		if (node.nodeType !== null) {
-			this.handler.headNode(node, node.nodeType || undefined);
+		if (node.nodeType !== '') {
+			this.handler.headNode(node, node.nodeType);
 			for (let att = node.firstAtt; att; att = att.next) {
 				this.handler.whiteSpaces(' ');
-				this.handler.attribute(att, att);
+				this.handler.attribute(att, att, att.attType);
 			}
 			if (node.bodyType !== "") this.handler.whiteSpaces(' ');
 		}
@@ -48,10 +48,10 @@ export class GsPrettyLH<SH extends IGsSyntaxHandler> extends GsLH2SH<SH> {
 			this.handler.endBody(node.bodyType);
 			break;
 		}
-		if (node.nodeType !== null) {
+		if (node.nodeType !== '') {
 			for (let att = node.firstTailAtt; att; att = att.next) {
 				this.handler.whiteSpaces(' ');
-				this.handler.attribute(att, att);
+				this.handler.attribute(att, att, att.attType);
 			}
 			this.handler.tailNode();
 		}
@@ -203,13 +203,13 @@ export class GsUnformatSH<SH extends IGsSyntaxHandler> extends GsChainedSH<SH> i
 		valueFormattable: true
 	};
 
-	attribute(name: IGsName, value: IGsValue, spBeforeEq?: string, spAfterEq?: string): void {
+	attribute(name: IGsName, value: IGsValue, specialType?: gsSpecialType | null, spBeforeEq?: string, spAfterEq?: string): void {
 		if (value.valueFormattable && value.value) {
 			this.txt.value = this.unindent(value.value);
 			this.txt.valueEsc = value.valueEsc;
-			this.handler.attribute(name, this.txt, spBeforeEq, spAfterEq);
+			this.handler.attribute(name, this.txt, specialType, spBeforeEq, spAfterEq);
 		} else
-			this.handler.attribute(name, value, spBeforeEq, spAfterEq);
+			this.handler.attribute(name, value, specialType, spBeforeEq, spAfterEq);
 	}
 
 	text(text: IGsEventText, inBodyMixed?: boolean): void {
@@ -236,14 +236,15 @@ export class GsSerializer<OUT extends IGsWriter> extends GsLH2SH<GsSerializer<OU
 		this.out = out || new GsStringWriter() as any;
 	}
 
-	headNode(name: IGsName, specialType?: gsSpecialNodeType): void {
+	headNode(name: IGsName, specialType?: gsSpecialType): void {
 		this.out.mark('<');
 		if (specialType) this.out.mark(specialType);
 		if (name.name) writeNameValue(this.out, name.name, name.nameEsc);
 	}
 
-	attribute(name: IGsName, value: IGsValue, spBeforeEq?: string, spAfterEq?: string): void {
+	attribute(name: IGsName, value: IGsValue, specialType?: gsSpecialType | null, spBeforeEq?: string, spAfterEq?: string): void {
 		const out = this.out;
+		if (specialType) out.mark(specialType);
 		writeNameValue(out, name.name, name.nameEsc);
 		if (value.value != null) {
 			if (spBeforeEq) out.space(spBeforeEq);

@@ -1,4 +1,4 @@
-import {gsSpecialNodeType, IGsEventAtt, IGsEventNode, IGsEventText, IGsLogicalHandler, IGsName, IGsSerializeOptions, IGsSyntaxHandler, IGsValue} from "../../api/gs.js";
+import {gsSpecialType, IGsEventAtt, IGsEventNode, IGsEventText, IGsLogicalHandler, IGsName, IGsSerializeOptions, IGsSyntaxHandler, IGsValue} from "../../api/gs.js";
 import {IGsWriter} from "../../api/gsSerializer.js";
 import {GsFormatLH, GsIndentLH, GsMinifiedLH, GsPrettyLH, GsUnformatSH} from "../core/gsSerializer.js";
 
@@ -106,8 +106,10 @@ abstract class GsHtmlColorized extends GsHtmlInlineWriter {
 		this.root = root;
 	}
 
-	attribute(name: IGsName, value: IGsValue, spBeforeEq?: string, spAfterEq?: string): void {
-		this.writeStr(name.name, name.nameEsc, "att");
+	attribute(name: IGsName, value: IGsValue, specialType?: gsSpecialType | null, spBeforeEq?: string, spAfterEq?: string): void {
+		this.parent = this.addSpan(!specialType ? "att" : specialType === "#" ? "att comment" : specialType === "&" ? "att metas" : specialType === "%" ? "att instruction" : "att syntax");
+		if (specialType) this.mark(specialType);
+		this.writeStr(name.name, name.nameEsc, "attName");
 		if (value.value !== null) {
 			if (spBeforeEq) this.space(spBeforeEq);
 			this.mark("=");
@@ -115,6 +117,7 @@ abstract class GsHtmlColorized extends GsHtmlInlineWriter {
 			if (value.valueFormattable) this.mark("~");
 			this.writeStr(value.value, value.valueEsc, value.valueFormattable ? "value formattable" : "value");
 		}
+		this.parent = this.parent.parentNode;
 	}
 
 	property(name: IGsName, isNull: boolean, spBeforeEq?: string): void {
@@ -165,15 +168,15 @@ abstract class GsHtmlColorized extends GsHtmlInlineWriter {
  * IGsSyntaxHandler building a tree html tags for viewing a colorized GS.
  * The rendering respect whiteSpaces input events.
  * class span :
- * 		"node comment", "node metas", "node instruction", "node syntax"
- * 		name, att, value, prop, text, mixed,
+ * 		node, "node comment", "node metas", "node instruction", "node syntax"
+ * 		name, attName, value, prop, text, mixed,
  * 		"value formattable", "text formattable", "mixed formattable"
  * Class inline : mark, str, bound, esc, sp
  *
  */
 export class GsHtmlColorizedSH extends GsHtmlColorized implements IGsSyntaxHandler {
 
-	headNode(name: IGsName, specialType?: gsSpecialNodeType): void {
+	headNode(name: IGsName, specialType?: gsSpecialType): void {
 		this.parent = this.addSpan(!specialType ? "node" : specialType === "#" ? "node comment" : specialType === "&" ? "node metas" : specialType === "%" ? "node instruction" : "node syntax");
 		if (specialType) {
 			this.mark("<" + specialType);
@@ -242,8 +245,8 @@ export class GsHtmlColorizedSH extends GsHtmlColorized implements IGsSyntaxHandl
 export class GsHtmlColorizedLH extends GsHtmlColorized implements IGsLogicalHandler {
 
 	startNode(node: IGsEventNode): void {
-		if (node.nodeType !== null) {
-			if (node.nodeType === "") {
+		if (node.nodeType !== '') {
+			if (node.nodeType === null) {
 				this.mark("<");
 			} else {
 				this.mark("<" + node.nodeType);
@@ -251,7 +254,7 @@ export class GsHtmlColorizedLH extends GsHtmlColorized implements IGsLogicalHand
 		}
 		if (node.name) this.writeStr(node.name, node.nameEsc, "name");
 		if (node.firstAtt) this.writeAtts(node.firstAtt);
-		if (node.nodeType !== null && node.bodyType !== "") this.space(' ');
+		if (node.nodeType !== '' && node.bodyType !== "") this.space(' ');
 		switch (node.bodyType) {
 		case "[":
 		case "{":
@@ -295,13 +298,13 @@ export class GsHtmlColorizedLH extends GsHtmlColorized implements IGsLogicalHand
 			break;
 		}
 		if (node.firstTailAtt) this.writeAtts(node.firstTailAtt);
-		if (node.nodeType !== null) this.mark('>');
+		if (node.nodeType !== '') this.mark('>');
 	}
 
 	protected writeAtts(att: IGsEventAtt) {
 		for (; att; att = att.next) {
 			this.space(' ');
-			this.attribute(att, att);
+			this.attribute(att, att, att.attType);
 		}
 	}
 

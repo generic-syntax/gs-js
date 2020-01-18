@@ -14,7 +14,7 @@
 	<h2>Explanations</h2>
 
 	<h3 id="node">node</h3>
-	<p>In GS all is node. A node has this form:</p>
+	<p>In GS everything is node. A node has this form:</p>
 
 	<p class="syntax"><span class="symbol">node</span> = '<span class="char"><</span>'
 		<a href="#specialType" class="symbol">specialType</a>?
@@ -80,8 +80,13 @@
 	</gs-viewer>
 
 	<h3 id="attribute">attribute</h3>
-	<p>Nodes can have zero or more attributes before and after it's body. An attribute is a name-value pair, the value is optional.</p>
-	<p class="syntax"><span class="symbol">attribute</span> = <a href="#name" class="symbol">name</a> ( '<span class="char">=</span>' <a href="#value" class="symbol">value</a> )?</p>
+	<p>Nodes can have zero or more attributes before and after it's body.</p>
+	<p>An attribute is a name-value pair, the value is optional.</p>
+	<p>An attribute, like a node, can have a special type.</p>
+	<p class="syntax"><span class="symbol">attribute</span> =
+		<a href="#specialType" class="symbol">specialType</a>?
+		<a href="#name" class="symbol">name</a>
+		( '<span class="char">=</span>' <a href="#value" class="symbol">value</a> )?</p>
 	<p id="value" class="syntax"><span class="symbol">value</span> = <a href="#rawCharacters" class="symbol">rawCharacters</a>
 		| <a href="#formattable" class="symbol">formattable</a> ? <a href="#quotedStr" class="symbol">quotedStr</a>
 		| <a href="#formattable" class="symbol">formattable</a> ? <a href="#boundedStr" class="symbol">boundedStr</a></p>
@@ -93,11 +98,13 @@
 	</gs-viewer>
 
 	<h3 id="specialType">specialType</h3>
-	<p>Nodes can have zero or one of the 4 special types:</p>
+	<p>Nodes nad attributes can have zero or one of the 4 special types:</p>
 	<p class="syntax"><span class="symbol">specialType</span> = '<span class="char">#</span>' | '<span class="char">&amp;</span>' | '<span class="char">%</span>' | '<span class="char">?</span>'</p>
 	<ul>
 		<li>Comment <span class="syntax">'<span class="char">#</span>'</span>, for inserting comments in the content or wraping some nodes to exclude them.</li>
-		<li>Meta <span class="syntax">'<span class="char">&</span>'</span>, for inserting metadata in the content without changing the content itself.</li>
+		<li>Meta <span class="syntax">'<span class="char">&</span>'</span>, for inserting metadata in the content without changing the content itself.
+			It is similar to annotations in programming languages.
+		</li>
 		<li>Instruction <span class="syntax">'<span class="char">%</span>'</span>, for inserting processing instructions in interaction with the content.</li>
 		<li>Syntax <span class="syntax">'<span class="char">?</span>'</span>, for declaring the current GS profile. It is useful for editors or validators
 			in order to emit more dedicated errors and warnings. For example, in a GS-ML profile, the <code>map</code> body should not be used in this
@@ -114,11 +121,13 @@
 &lt;?ON>
 &lt;?ML>
 &lt;?OM>
+&lt;specialTypesInAtt %instruction #todo='comment' &meta ?ML>
 </pre>
 	</gs-viewer>
 
 	<h3 id="simpleNode">simpleNode</h3>
-	<p>A simple node is a node without <code>specialType</code>, <code>name</code> or <code>attribute</code> and have only a <code>body</code>.
+	<p>A simple node is a node without <a href="#specialType"><code>specialType</code></a>, <a href="#name"><code>name</code></a>
+		or <a href="#attribute"><code>attribute</code></a> and have only a <a href="#body"><code>body</code></a>.
 		In this case, the <code><</code> and <code>></code> marks can be omitted.
 	</p>
 	<p class="syntax"><span class="symbol">simpleNode</span> = <a href="#body" class="symbol">body</a> | <a href="#rawCharacters" class="symbol">rawCharacters</a></p>
@@ -192,7 +201,7 @@ rawCharacters
 	<p>Characters in this sequence can be escaped by a <code>'\'</code>. See <a href="#commonEscapingRule">Commons quoted escaping rules</a>.</p>
 
 	<h3 id="commonEscapingRule">Commons quoted escaping rules</h3>
-	<p>In <code>quotedStr</code>, <code>quotedText</code> and <code>mixedText</code> some characters can be escaped:</p>
+	<p>In <a href="#quotedStr"><code>quotedStr</code></a>, <a href="#quotedText"><code>quotedText</code></a> and <a href="#mixedText"><code>mixedText</code></a> some characters can be escaped:</p>
 	<ul>
 		<li><code>\\</code>, <code>\'</code>, <code>\"</code>, <code>\`</code>, <code>\&lt;</code> escape the second character</li>
 		<li><code>\b</code> escape the backspace <code>08</code> unicode character</li>
@@ -225,7 +234,7 @@ simpleNode = body | rawCharacters
 node = '<' specialType? name? attr* s* (body attr* s*)? '>'
 
 name = rawCharacters | quotedStr | boundedStr
-attr = s* name (s* '=' s* value)?
+attr = s* specialType? name (s* '=' s* value)?
 value = rawCharacters | formattable? quotedStr | formattable? boundedStr
 
 body = bodyList | bodyText | bodyMap | bodyMixed

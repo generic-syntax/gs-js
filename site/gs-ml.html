@@ -360,6 +360,20 @@
 
 	<p>Note: due to DOM limitations, these richer comments and metas nodes can't be instantiated in DOM nodes and are skipped in the DOM building process.</p>
 
+
+	<h3>Attributes with a special type</h3>
+	<gs-viewer class="border">
+<pre>
+ &lt;div onclick='version1()' #onclick='version2()' #onclick='version3()'>
+ &lt;myTag #todo='To remove...'>
+</pre>
+	</gs-viewer>
+	<p>In GS, attributes can be commented.</p>
+	<p>More generally, attributes can have any special type:
+		comment <code>#</code>, instruction <code>%</code>, meta <code>&</code> or syntax <code>?</code>.</p>
+	<p>These attributes with a special type are skipped in the DOM building process.</p>
+
+
 	<h3>No restriction in names</h3>
 	<gs-viewer class="border">
 <pre>
@@ -370,7 +384,7 @@
 
 	<p>As in JSON, node names and key attributes are unlimited by escape mechanisms.</p>
 
-	<p>Of course, currently you can't use these free names if you want to transform your GS to DOM or XML/HTML.</p>
+	<p>Of course, you can't use these free names if you want to transform your GS to DOM or XML/HTML.</p>
 
 	<h3>Multi-root document</h3>
 	<p>Like HTML, but unlike XML, a GS document (or file) does not impose a single root element and can contain a set of nodes (see the examples above).

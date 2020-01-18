@@ -64,83 +64,88 @@ registerStyle('gs-viewer', /* language=CSS */ `
 		display: block;
 		font-family: monospace;
 		white-space: pre;
-	  padding: 4px;
-	  overflow: auto;
-  }
+		padding: 4px;
+		overflow: auto;
+	}
 
-  .name > .str {
-	  color: #5e0074;
-  }
+	.name > .str {
+		color: #5e0074;
+	}
 
-  .att > .str {
-	  color: #790032;
-  }
+	.attName > .str {
+		color: #790032;
+	}
 
-  .value > .str {
-	  color: #025300;
-  }
+	.value > .str {
+		color: #025300;
+	}
 
-  .prop > .str {
-	  color: #954100;
-  }
+	.prop > .str {
+		color: #954100;
+	}
 
-  .text > .str,
-  .mixed > .str {
-	  color: #00384e;
-  }
+	.text > .str,
+	.mixed > .str {
+		color: #00384e;
+	}
 
-  .mark {
-	  color: #27003e;
-  }
+	.mark {
+		color: #27003e;
+	}
 
-  .bound,
-  .mixed > .mark {
-	  color: #9eaf99;;
-  }
+	.bound,
+	.mixed > .mark {
+		color: #9eaf99;;
+	}
 
-  .str {
-	  color: #006f27;
-  }
+	.str {
+		color: #006f27;
+	}
 
-  .esc {
-	  color: #3a7484;
-	  font-weight: bold;
-  }
+	.esc {
+		color: #3a7484;
+		font-weight: bold;
+	}
 
-  .formattable {
-	  white-space: normal;
-  }
+	.formattable {
+		white-space: normal;
+	}
 
-  .comment {
-	  background-color: #e2ffef;
-  }
+	.comment {
+		background-color: #e2ffef;
+	}
 
-  .metas {
-	  background-color: #f2e5ff;
-  }
+	.metas {
+		background-color: #dcf0fd;
+	}
 
-  .syntax {
-	  background-color: #dee3f7;
-  }
+	.syntax {
+		background-color: #dee3f7;
+	}
 
-  .instruction > .name > .str,
-  .instruction > .mark:first-child,
-  .instruction > .mark:last-child {
-	  color: #850054;
-	  font-weight: bold;
-	  /*background-color: #fde7f2;*/
-  }
+	.instruction > .name > .str,
+	.instruction > .mark:first-child,
+	.instruction > .mark:last-child {
+		color: #7b004d;
+		font-weight: bold;
+		/*background-color: #fde7f2;*/
+	}
 
-  /* For GsHtmlBlockSH */
+	/*.att.instruction {*/
+	/*	background-color: #f2e5ff;*/
+	/*}*/
 
-  .mixed > .box {
-	  display: inline;
-  }
 
-  .ch {
-	  margin-inline-start: 1ch;
-	  padding-inline-start: 1ch;
-  }
+	/* For GsHtmlBlockSH */
+
+	.mixed > .box {
+		display: inline;
+	}
+
+	.ch {
+		margin-inline-start: 1ch;
+		padding-inline-start: 1ch;
+	}
 `);
 
 customElements.define('gs-viewer', GsViewer);

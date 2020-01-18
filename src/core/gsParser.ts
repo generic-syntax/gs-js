@@ -1,4 +1,4 @@
-import {gsNodeType, IGsEventText, IGsLogicalHandler, IGsName} from "../../api/gs.js";
+import {gsNodeType, gsSpecialType, IGsEventText, IGsLogicalHandler, IGsName} from "../../api/gs.js";
 import {IGsParser, IGsReader} from "../../api/gsParser.js";
 import {GsEventNode, GsLogicalEventProducer} from "./gsLogicalHandler.js";
 
@@ -31,7 +31,7 @@ export class GsParser<H extends IGsLogicalHandler> extends GsLogicalEventProduce
 			this.parseNode(prop);
 			return;
 		case BODYLIST_START:
-			n = this.pushNode(null, prop);
+			n = this.pushNode('', prop);
 			n.bodyType = "[";
 			n.name = null;
 			this.handler.startNode(n);
@@ -39,7 +39,7 @@ export class GsParser<H extends IGsLogicalHandler> extends GsLogicalEventProduce
 			this.popNode(n);
 			return;
 		case BODYMAP_START:
-			n = this.pushNode(null, prop);
+			n = this.pushNode('', prop);
 			n.bodyType = "{";
 			n.name = null;
 			this.handler.startNode(n);
@@ -49,7 +49,7 @@ export class GsParser<H extends IGsLogicalHandler> extends GsLogicalEventProduce
 		}
 		if (isRawChar(c)) {
 			//rawChars as text node
-			n = this.pushNode(null, prop);
+			n = this.pushNode('', prop);
 			n.bodyType = '"';
 			n.name = null;
 			this.handler.startNode(n);
@@ -67,7 +67,7 @@ export class GsParser<H extends IGsLogicalHandler> extends GsLogicalEventProduce
 		}
 		switch (c) {
 		case BODYMIXED:
-			n = this.pushNode(null, prop);
+			n = this.pushNode('', prop);
 			n.bodyType = formattable ? "~`" : "`";
 			n.name = null;
 			this.handler.startNode(n);
@@ -75,7 +75,7 @@ export class GsParser<H extends IGsLogicalHandler> extends GsLogicalEventProduce
 			this.popNode(n);
 			return;
 		case BODYTEXT:
-			n = this.pushNode(null, prop);
+			n = this.pushNode('', prop);
 			n.bodyType = '"';
 			n.name = null;
 			this.handler.startNode(n);
@@ -86,7 +86,7 @@ export class GsParser<H extends IGsLogicalHandler> extends GsLogicalEventProduce
 			this.popNode(n);
 			return;
 		case BOUND_BODYTEXT:
-			n = this.pushNode(null, prop);
+			n = this.pushNode('', prop);
 			n.bodyType = '"';
 			n.name = null;
 			this.handler.startNode(n);
@@ -127,7 +127,7 @@ export class GsParser<H extends IGsLogicalHandler> extends GsLogicalEventProduce
 			nodeType = "?";
 			break;
 		default:
-			nodeType = "";
+			nodeType = null;
 		}
 		const n = this.pushNode(nodeType, prop);
 		if (this.fillName(c, n)) c = this.in.readCodeNoSpace();
@@ -240,7 +240,7 @@ export class GsParser<H extends IGsLogicalHandler> extends GsLogicalEventProduce
 			if (c === NODE_START) {
 				this.parseNode();
 			} else {
-				let n = this.pushNode(null, undefined);
+				let n = this.pushNode('', undefined);
 				n.bodyType = '"';
 				n.name = null;
 				this.handler.startNode(n);
@@ -291,7 +291,26 @@ export class GsParser<H extends IGsLogicalHandler> extends GsLogicalEventProduce
 				break;
 			}
 			//On est sur un att
-			const a = n.pushAtt(inTail);
+			let type: gsSpecialType = null;
+			switch (c) {
+			case SPECIALTYPE_COMMENT:
+				c = this.in.readCode();
+				type = "#";
+				break;
+			case SPECIALTYPE_INSTR:
+				c = this.in.readCode();
+				type = "%";
+				break;
+			case SPECIALTYPE_META:
+				c = this.in.readCode();
+				type = "&";
+				break;
+			case SPECIALTYPE_SYNTAX:
+				c = this.in.readCode();
+				type = "?";
+				break;
+			}
+			const a = n.pushAtt(type, inTail);
 			if (!this.fillName(c, a)) this.in.error("not an attribute");
 			c = this.in.readCodeNoSpace();
 			if (c === ATT_EQ) {

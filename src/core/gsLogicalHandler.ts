@@ -1,4 +1,4 @@
-import {gsEscaping, gsEventBodyType, gsNodeType, IGsEventAtt, IGsEventNode, IGsLogicalHandler, IGsName, IGsValue} from "../../api/gs.js";
+import {gsEscaping, gsEventBodyType, gsNodeType, gsSpecialType, IGsEventAtt, IGsEventNode, IGsLogicalHandler, IGsName, IGsValue} from "../../api/gs.js";
 
 /**
  * Base class for events generator pushed to a IGsLogicalHandler
@@ -72,7 +72,7 @@ export class GsEventNode implements IGsEventNode {
 	readonly depth: number;
 	holderProp: IGsName | undefined = undefined;
 
-	nodeType: gsNodeType = null;
+	nodeType: gsNodeType = '';
 	name: string = '';
 	nameEsc: gsEscaping = false;
 
@@ -119,13 +119,14 @@ export class GsEventNode implements IGsEventNode {
 		this.lastAtt = null;
 	}
 
-	pushAtt(inTail: boolean): GsEventAtt {
+	pushAtt(type: gsSpecialType | null, inTail: boolean): GsEventAtt {
 		let next = this.lastAtt ? this.lastAtt._next : this._firstAtt;
 		if (next) {
 			if (next.next) next.next.name = null; //invalid next att
 		} else {
 			next = this.lastAtt ? new GsEventAtt(this.lastAtt) : (this._firstAtt = new GsEventAtt(null));
 		}
+		next.attType = type;
 		next.inTail = inTail;
 		if (inTail && !this.firstTailAtt) this.firstTailAtt = next;
 		this.lastAtt = next;
@@ -133,7 +134,7 @@ export class GsEventNode implements IGsEventNode {
 	}
 
 	pushAttFrom(att: IGsEventAtt): GsEventAtt {
-		const a = this.pushAtt(att.inTail);
+		const a = this.pushAtt(att.attType, att.inTail);
 		a.name = att.name;
 		a.nameEsc = att.nameEsc;
 		a.value = att.value;
@@ -148,6 +149,7 @@ export class GsEventNode implements IGsEventNode {
  * Attribute definition used in IGsLogicalHandler
  */
 export class GsEventAtt implements IGsEventAtt {
+	attType: gsSpecialType | null;
 	name: string | null;
 	nameEsc: gsEscaping = false;
 	value: string | null = null;

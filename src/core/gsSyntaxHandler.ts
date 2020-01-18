@@ -1,4 +1,4 @@
-import {gsSpecialNodeType, IGsEventNode, IGsEventText, IGsLogicalHandler, IGsName, IGsSyntaxHandler, IGsValue} from "../../api/gs.js";
+import {gsSpecialType, IGsEventNode, IGsEventText, IGsLogicalHandler, IGsName, IGsSyntaxHandler, IGsValue} from "../../api/gs.js";
 
 /** Base class for transform IGsLogicalHandler events to IGsSyntaxHandler. */
 export abstract class GsLH2SH<SH extends IGsSyntaxHandler> implements IGsLogicalHandler {
@@ -6,10 +6,10 @@ export abstract class GsLH2SH<SH extends IGsSyntaxHandler> implements IGsLogical
 	constructor(public handler: SH) {}
 
 	startNode(node: IGsEventNode): void {
-		if (node.nodeType !== null) {
-			this.handler.headNode(node, node.nodeType || undefined);
+		if (node.nodeType !== '') {
+			this.handler.headNode(node, node.nodeType);
 			if (!node.name && node.firstAtt) this.handler.whiteSpaces(' ');
-			for (let att = node.firstAtt; att; att = att.next) this.handler.attribute(att, att);
+			for (let att = node.firstAtt; att; att = att.next) this.handler.attribute(att, att, att.attType);
 		}
 		switch (node.bodyType) {
 		case "[":
@@ -26,7 +26,7 @@ export abstract class GsLH2SH<SH extends IGsSyntaxHandler> implements IGsLogical
 	}
 
 	bodyText(text: IGsEventText, holder: IGsEventNode): void {
-		this.handler.text(text, holder.nodeType === null && holder.parent?.isBodyMixed);
+		this.handler.text(text, holder.nodeType === '' && holder.parent?.isBodyMixed);
 	}
 
 	endNode(node: IGsEventNode): void {
@@ -38,8 +38,8 @@ export abstract class GsLH2SH<SH extends IGsSyntaxHandler> implements IGsLogical
 			this.handler.endBody(node.bodyType);
 			break;
 		}
-		if (node.nodeType !== null) {
-			for (let att = node.firstTailAtt; att; att = att.next) this.handler.attribute(att, att);
+		if (node.nodeType !== '') {
+			for (let att = node.firstTailAtt; att; att = att.next) this.handler.attribute(att, att, att.attType);
 			this.handler.tailNode();
 		}
 	}
@@ -50,12 +50,12 @@ export abstract class GsChainedSH<SH extends IGsSyntaxHandler> implements IGsSyn
 
 	constructor(public handler: SH) {}
 
-	headNode(name: IGsName, specialType?: gsSpecialNodeType): void {
+	headNode(name: IGsName, specialType?: gsSpecialType): void {
 		this.handler.headNode(name, specialType);
 	}
 
-	attribute(name: IGsName, value: IGsValue, spBeforeEq?: string, spAfterEq?: string): void {
-		this.handler.attribute(name, value, spBeforeEq, spAfterEq);
+	attribute(name: IGsName, value: IGsValue, specialType?: gsSpecialType | null, spBeforeEq?: string, spAfterEq?: string): void {
+		this.handler.attribute(name, value, specialType, spBeforeEq, spAfterEq);
 	}
 
 	text(text: IGsEventText, inBodyMixed?: boolean): void {

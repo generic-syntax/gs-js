@@ -1,4 +1,4 @@
-import {gsEscaping, gsSpecialNodeType} from "../../api/gs.js";
+import {gsEscaping, gsSpecialType} from "../../api/gs.js";
 import {IGsBuilder, IGsBuilderState} from "../../api/gsBuilder.js";
 import {IGsWriter} from "../../api/gsSerializer.js";
 import {GsStringWriter, writeNameValue, writeText} from "./gsSerializer.js";
@@ -41,7 +41,7 @@ export class GsSerializerBd<OUT extends IGsWriter> implements IGsBuilder {
 		return this;
 	}
 
-	nodeSpecial(specialType: gsSpecialNodeType, name?: string, esc?: gsEscaping): this {
+	nodeSpecial(specialType: gsSpecialType, name?: string, esc?: gsEscaping): this {
 		if (this.state === IGsBuilderState.inAtt) this.popState();
 		switch (this.state) {
 		case IGsBuilderState.inHeadNode:
@@ -73,6 +73,23 @@ export class GsSerializerBd<OUT extends IGsWriter> implements IGsBuilder {
 			this.state = IGsBuilderState.inAtt;
 			//!break;
 		case IGsBuilderState.inAtt:
+			writeNameValue(this.out, name, esc);
+			break;
+		default:
+			this.error(`Attribute not allowed in '${STATES[this.state]}' state`);
+		}
+		return this;
+	}
+
+	attSpecial(specialType: gsSpecialType, name: string, esc?: gsEscaping): this {
+		switch (this.state) {
+		case IGsBuilderState.inHeadNode:
+		case IGsBuilderState.inTailNode:
+			this.pushState(this.state);
+			this.state = IGsBuilderState.inAtt;
+			//!break;
+		case IGsBuilderState.inAtt:
+			this.out.mark(specialType);
 			writeNameValue(this.out, name, esc);
 			break;
 		default:

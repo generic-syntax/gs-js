@@ -1,20 +1,28 @@
-import {gsEscaping, gsSpecialNodeType} from "api/gs";
+import {gsEscaping, gsSpecialType} from "api/gs";
 
 /**
  * Fluent API for building GS content.
- * Example:
-		const s = new GsSerializer();
-		s.node("html").list(s => {
-			s.node('head').list().node("title").text("x").end().end();
-			s.node('body').list(s=>{
-				s.node("h1").text("Title").end();
-				s.node("p").mixed(true, s=>{
-					s.text("My para ");
-					s.node("em").mixed(true).text("with span").end().end();
-					s.text(".");
-				}).end();
-			}).end();
-		}).end();
+ * ML example:
+ *	const s = new GsSerializer();
+ *	s.node("html").list(s => {
+ *		s.node('head').list().node("title").text("x").end().end();
+ *		s.node('body').list(s=>{
+ *			s.node("h1").text("Title").end();
+ *			s.node("p").mixed(true, s=>{
+ *				s.text("My para ");
+ *				s.node("em").mixed(true).text("with span").end().end();
+ *				s.text(".");
+ *			}).end();
+ *		}).end();
+ *	}).end();
+ *
+ * ON example:
+ * s.map(s => {
+ *   s.prop('myProp').text("value");
+ *   s.prop('bool').text("true", false);
+ *   s.prop('number').text("12", false);
+ *   s.prop('list').list().text("a").text("b").end();
+ * })
  */
 export interface IGsBuilder {
 
@@ -22,6 +30,8 @@ export interface IGsBuilder {
 	state: IGsBuilderState;
 
 	/**
+	 * Start a node with '<' (ie not a simple node).
+	 *
 	 * Possible states:
 	 * - 'root' | 'inList' | 'inMixed' | 'inMap'  | 'inProp' : open node -> 'inHeadNode'
 	 * - 'inHeadNode' | 'inTailNode' : close current node and open a sibling node -> 'inHeadNode'
@@ -29,7 +39,16 @@ export interface IGsBuilder {
 	 */
 	node(name?: string, esc?: gsEscaping): this
 
-	nodeSpecial(specialType: gsSpecialNodeType, name?: string, esc?: gsEscaping): this
+
+	/**
+	 * Start a node with '<' and a specialType.
+	 *
+	 * Possible states:
+	 * - 'root' | 'inList' | 'inMixed' | 'inMap'  | 'inProp' : open node -> 'inHeadNode'
+	 * - 'inHeadNode' | 'inTailNode' : close current node and open a sibling node -> 'inHeadNode'
+	 * - 'inAtt' : leave current attribute without value, close close current node and open a sibling node -> 'inHeadNode'
+	 */
+	nodeSpecial(specialType: gsSpecialType, name?: string, esc?: gsEscaping): this
 
 	/**
 	 * Possible states:
@@ -37,6 +56,13 @@ export interface IGsBuilder {
 	 * - 'inAtt': leave current attribute without value and assa new one -> 'inAtt'
 	 */
 	att(name: string, esc?: gsEscaping): this
+
+	/**
+	 * Possible states:
+	 * - 'inHeadNode' | 'inTailNode': add an attribute -> 'inAtt'
+	 * - 'inAtt': leave current attribute without value and assa new one -> 'inAtt'
+	 */
+	attSpecial(specialType: gsSpecialType, name: string, esc?: gsEscaping): this
 
 	/**
 	 * Possible states:
