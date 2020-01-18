@@ -14,27 +14,6 @@
 	<h2>JSON and XML shortcomings</h2>
 
 	<div class="cols">
-
-		<div class="border s1 scroll">
-			<div class="head">GS</div>
-			<gs-viewer>
-<pre>
-&lt;http://schema.org/Article identifier='5Pl8d4' {
-  author= "Author name"
-  datePublished= "2020-1-1"
-  image= &lt;http://schema.org/imageObject {
-  	url= "http://example.com/image.png"
-  	height=600
-  	width=800
-  }>
-  publisher= &lt;http://schema.org/Organization name='Publisher name' {
-  	logo=&lt;http://schema.org/imageObject url='http://example.com/logo.png'>
-  }>
-}>
-</pre>
-			</gs-viewer>
-		</div>
-
 		<div class="border s1 scroll">
 			<div class="head">JSON-LD</div>
 			<code-mirror mode="javascript">
@@ -61,6 +40,26 @@
 </pre>
 			</code-mirror>
 		</div>
+		<div class="border s1 scroll">
+			<div class="head">GS</div>
+			<gs-viewer>
+<pre>
+&lt;http://schema.org/Article identifier='5Pl8d4' {
+  author= "Author name"
+  datePublished= "2020-1-1"
+  image= &lt;http://schema.org/imageObject {
+  	url= "http://example.com/image.png"
+  	height=600
+  	width=800
+  }>
+  <#"String properties can also be defined in attributes">
+  publisher= &lt;http://schema.org/Organization name='Publisher name' {
+  	logo=&lt;http://schema.org/imageObject url='http://example.com/logo.png'>
+  }>
+}>
+</pre>
+			</gs-viewer>
+		</div>
 	</div>
 
 	<p>JSON-LD is today one of the best languages for serializing a typed objects graph.
@@ -85,7 +84,7 @@
 	<gs-viewer class="border scroll">
 <pre>
 &lt;?OM>
-&lt;User id='2197' {
+&lt;User account='2197' {
   <%id"JOM">
   name= "John Merting"
   chief= <%ref"MAD">
@@ -93,7 +92,7 @@
     <%ref"mgrs">
   ]
 }>
-&lt;User id='2123' {
+&lt;User account='2123' {
   <%id"MAD">
   name= "Marc Dublof"
   groups=[

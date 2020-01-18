@@ -87,7 +87,8 @@
   	height=600
   	width=800
   	}>
-  publisher= &lt;Organization name='Publisher name' {
+  publisher= &lt;Organization {
+    name="Publisher name"
   	logo=&lt;imageObject url='http://example.com/logo.png'>
   }>
 }>
@@ -146,7 +147,7 @@ const domFragment = GSML.parse('xml', `&lt;node att=value>`);
 console.log(GSML.stringify('xml', domFragment)); //minified
 console.log(GSML.stringify('xml', domFragment, {serialize:{
   method: 'formatted',
-  indent: '   ',
+  indent: '  ',
   lineWidth: 128
 }
 }));</pre>

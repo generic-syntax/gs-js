@@ -67,8 +67,7 @@
 	<p>XML and HTML do not differentiate insignificant white spaces for human readability (indentations) and significant spaces in text nodes.</p>
 	<p>In this example the space between the <code>em</code> and <code>span</code> tags is semantically needed whereas space between <code>div</code>
 		and <code>p</code> is not.</p>
-	<p>That's why when the DOM is instantiated, white spaces in text nodes are always built but many are useless
-		and consumes unnecessarily time and memory.</p>
+	<p>That's why when the DOM is instantiated, white space only text nodes are always built but most are useless and consume unnecessary time and memory.</p>
 
 	<p>In GS, authors use different body type nodes:</p>
 	<ul>
@@ -286,7 +285,7 @@
 	<p>As opposed to XML and JSON, the main html issue is the need for a dedicated and complex parser and serializer with many special edge cases.</p>
 
 	<p>GS offers a generic and simple syntax: parsers and serializers can easily be implemented in many languages.
-		For example a GS event driven parser implemented in Typescript is less than 700 lines of code (11kb minified js), and a minified serializer is about 200 lines.</p>
+		For example a GS event driven parser implemented in Typescript is less than 700 lines of code (11kb minified js), and a serializer is about 200 lines.</p>
 
 	<p>Are these HTML dedicated parsing rules useful for authors?</p>
 
