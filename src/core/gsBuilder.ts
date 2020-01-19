@@ -1,48 +1,25 @@
-import {gsEscaping, gsSpecialType} from "../../api/gs.js";
+import {gsEscaping, gsSpecialType, IGsLogicalHandler, IGsName, IGsSerializeOptions, IGsValue, rawChars} from "../../api/gs.js";
 import {IGsBuilder, IGsBuilderState} from "../../api/gsBuilder.js";
-import {IGsWriter} from "../../api/gsSerializer.js";
-import {GsStringWriter, writeNameValue, writeText} from "./gsSerializer.js";
-
+import {GsLogicalEventProducer} from "./gsLogicalHandler.js";
+import {buildSerializer, GsStringWriter} from "./gsSerializer.js";
 
 /**
- * IGsBuilder serializer
- * TODO to replace by new GsBuilder(new GsSerializer(out)) when GsBuilder will be implemented
+ * IGsBuilder that produce events to a IGsLogicalHandler.
+ *
+ * @see GsBuilderToString
  */
-export class GsSerializerBd<OUT extends IGsWriter> implements IGsBuilder {
+export class GsBuilderToLH<SH extends IGsLogicalHandler> extends GsLogicalEventProducer<SH> implements IGsBuilder {
 
 	state: IGsBuilderState = IGsBuilderState.root;
 
 	protected stack: IGsBuilderState[] = [];
 
-	constructor(readonly out?: OUT) {
-		this.out = out || new GsStringWriter() as any;
-	}
-
 	node(name?: string, esc?: gsEscaping): this {
-		if (this.state === IGsBuilderState.inAtt) this.popState();
-		switch (this.state) {
-		case IGsBuilderState.inHeadNode:
-		case IGsBuilderState.inTailNode:
-			this.endNode();
-			//!break;
-		case IGsBuilderState.root:
-		case IGsBuilderState.inList:
-		case IGsBuilderState.inMixed:
-		case IGsBuilderState.inMap:
-		case IGsBuilderState.inProp:
-			this.pushState(this.state);
-			this.out.mark("<");
-			if (name) writeNameValue(this.out, name, esc);
-			this.state = IGsBuilderState.inHeadNode;
-			break;
-		default:
-			this.error(`Start node not allowed in '${STATES[this.state]}' state`);
-		}
-		return this;
+		return this.nodeSpecial(null, name, esc);
 	}
 
-	nodeSpecial(specialType: gsSpecialType, name?: string, esc?: gsEscaping): this {
-		if (this.state === IGsBuilderState.inAtt) this.popState();
+	nodeSpecial(specialType: gsSpecialType | null, name?: string, esc?: gsEscaping): this {
+		if (this.state === IGsBuilderState.inAtt) this.emptyAtt();
 		switch (this.state) {
 		case IGsBuilderState.inHeadNode:
 		case IGsBuilderState.inTailNode:
@@ -51,14 +28,22 @@ export class GsSerializerBd<OUT extends IGsWriter> implements IGsBuilder {
 		case IGsBuilderState.root:
 		case IGsBuilderState.inList:
 		case IGsBuilderState.inMixed:
-		case IGsBuilderState.inMap:
-		case IGsBuilderState.inProp:
-			this.pushState(this.state);
-			this.out.mark("<");
-			this.out.mark(specialType);
-			if (name) writeNameValue(this.out, name, esc);
+		case IGsBuilderState.inMap: {
+			this.pushState();
+			const n = this.pushNode(specialType, undefined);
+			setName(n, name, esc);
 			this.state = IGsBuilderState.inHeadNode;
 			break;
+		}
+		case IGsBuilderState.inProp: {
+			this.pushState();
+			const prop = this.getProp();
+			this.handler.bodyMapProp(prop, false, this.peekNode());
+			const n = this.pushNode(specialType, prop);
+			setName(n, name, esc);
+			this.state = IGsBuilderState.inHeadNode;
+			break;
+		}
 		default:
 			this.error(`Start node not allowed in '${STATES[this.state]}' state`);
 		}
@@ -66,32 +51,39 @@ export class GsSerializerBd<OUT extends IGsWriter> implements IGsBuilder {
 	}
 
 	att(name: string, esc?: gsEscaping): this {
-		switch (this.state) {
-		case IGsBuilderState.inHeadNode:
-		case IGsBuilderState.inTailNode:
-			this.pushState(this.state);
-			this.state = IGsBuilderState.inAtt;
-			//!break;
-		case IGsBuilderState.inAtt:
-			writeNameValue(this.out, name, esc);
-			break;
-		default:
-			this.error(`Attribute not allowed in '${STATES[this.state]}' state`);
-		}
-		return this;
+		return this.attSpecial(null, name, esc);
 	}
 
-	attSpecial(specialType: gsSpecialType, name: string, esc?: gsEscaping): this {
+	attSpecial(specialType: gsSpecialType | null, name: string, esc?: gsEscaping): this {
+		if (this.state === IGsBuilderState.inAtt) this.emptyAtt();
 		switch (this.state) {
-		case IGsBuilderState.inHeadNode:
-		case IGsBuilderState.inTailNode:
-			this.pushState(this.state);
+		case IGsBuilderState.inHeadNode: {
+			this.pushState();
+			const a = this.peekNode().pushAtt(specialType, false);
+			setName(a, name, esc);
 			this.state = IGsBuilderState.inAtt;
-			//!break;
-		case IGsBuilderState.inAtt:
-			this.out.mark(specialType);
-			writeNameValue(this.out, name, esc);
 			break;
+		}
+		case IGsBuilderState.inProp:
+			this.popState();
+			this.handler.bodyMapProp(this.getProp(), true, this.peekNode());
+			this.state = IGsBuilderState.inMap;
+			//!break;
+		case IGsBuilderState.inList:
+		case IGsBuilderState.inMixed:
+		case IGsBuilderState.inMap: {
+			this.popState();
+			if (this.state as any !== IGsBuilderState.inHeadNode) this.error(`Tail attribute not allowed in a simple node`);
+			this.state = IGsBuilderState.inTailNode;
+			//!break;
+		}
+		case IGsBuilderState.inTailNode: {
+			this.pushState();
+			const a = this.peekNode().pushAtt(specialType, true);
+			setName(a, name, esc);
+			this.state = IGsBuilderState.inAtt;
+			break;
+		}
 		default:
 			this.error(`Attribute not allowed in '${STATES[this.state]}' state`);
 		}
@@ -101,9 +93,7 @@ export class GsSerializerBd<OUT extends IGsWriter> implements IGsBuilder {
 	val(value: string, esc?: gsEscaping, formattable?: boolean): this {
 		switch (this.state) {
 		case IGsBuilderState.inAtt:
-			if (formattable) this.out.mark('=~');
-			else this.out.mark('=');
-			writeNameValue(this.out, value, formattable && (esc === false || esc == null) ? true : esc);
+			setVal(this.peekNode().lastAtt, value, esc, formattable);
 			this.popState();
 			break;
 		default:
@@ -113,24 +103,52 @@ export class GsSerializerBd<OUT extends IGsWriter> implements IGsBuilder {
 	}
 
 	text(value: string, esc?: gsEscaping, formattable?: boolean): this {
-		if (this.state === IGsBuilderState.inAtt) this.popState();
+		if (this.state === IGsBuilderState.inAtt) this.emptyAtt();
 		if (this.state === IGsBuilderState.inTailNode) this.endNode();
 		switch (this.state) {
-		case IGsBuilderState.inHeadNode:
-			writeText(this.out, value, esc === false ? true : esc, formattable);
+		case IGsBuilderState.inHeadNode: {
+			const n = this.peekNode();
+			n.bodyType = '"';
+			this.handler.startNode(n);
+			setVal(this.txt, value, !esc ? true : esc, formattable);
+			this.handler.bodyText(this.txt, n);
 			this.state = IGsBuilderState.inTailNode;
 			break;
-		case IGsBuilderState.root:
-		case IGsBuilderState.inList:
-			writeText(this.out, value, esc, formattable);
-			break;
-		case IGsBuilderState.inProp:
-			writeText(this.out, value, esc, formattable);
+		}
+		case IGsBuilderState.inProp: {
+			const prop = this.getProp();
+			this.handler.bodyMapProp(prop, false, this.peekNode());
+			const n = this.pushNode('', prop);
+			n.bodyType = '"';
+			this.handler.startNode(n);
+			setVal(this.txt, value, esc, formattable);
+			this.handler.bodyText(this.txt, n);
+			this.popNode(n);
 			this.state = IGsBuilderState.inMap;
 			break;
-		case IGsBuilderState.inMixed:
-			this.out.mixedText(value);
+		}
+		case IGsBuilderState.root:
+		case IGsBuilderState.inList: {
+			const n = this.pushNodeAnonymous('', undefined);
+			n.bodyType = '"';
+			this.handler.startNode(n);
+			setVal(this.txt, value, esc, formattable);
+			this.handler.bodyText(this.txt, n);
+			this.popNode(n);
 			break;
+		}
+		case IGsBuilderState.inMixed: {
+			const mixed = this.peekNode();
+			const n = this.pushNodeAnonymous('', undefined);
+			n.bodyType = '"';
+			this.handler.startNode(n);
+			this.txt.value = value;
+			this.txt.valueEsc = false;
+			this.txt.valueFormattable = mixed.bodyType === "~`";
+			this.handler.bodyText(this.txt, n);
+			this.popNode(n);
+			break;
+		}
 		default:
 			this.error(`Text node not allowed in '${STATES[this.state]}' state`);
 		}
@@ -138,21 +156,30 @@ export class GsSerializerBd<OUT extends IGsWriter> implements IGsBuilder {
 	}
 
 	list(children?: ($: IGsBuilder) => void): this {
-		if (this.state === IGsBuilderState.inAtt) this.popState();
+		if (this.state === IGsBuilderState.inAtt) this.emptyAtt();
 		switch (this.state) {
 		case IGsBuilderState.inMixed:
-			this.pushState(this.state);
-			this.out.mark('<');
-			this.state = IGsBuilderState.inHeadNode;
-			//!break;
 		case IGsBuilderState.root:
 		case IGsBuilderState.inList:
-		case IGsBuilderState.inProp:
-		case IGsBuilderState.inHeadNode:
-			this.pushState(this.state);
-			this.out.mark('[');
+		case IGsBuilderState.inProp: {
+			this.pushState();
+			let prop: IGsName;
+			if (this.state === IGsBuilderState.inProp) {
+				prop = this.getProp();
+				this.handler.bodyMapProp(prop, false, this.peekNode());
+			}
+			this.pushNodeAnonymous(this.state === IGsBuilderState.inMixed ? null : '', prop);
+			this.state = IGsBuilderState.inHeadNode;
+			//!break;
+		}
+		case IGsBuilderState.inHeadNode: {
+			this.pushState();
+			const n = this.peekNode();
+			n.bodyType = "[";
+			this.handler.startNode(n);
 			this.state = IGsBuilderState.inList;
 			break;
+		}
 		default:
 			this.error(`List content not allowed in '${STATES[this.state]}' state`);
 		}
@@ -161,19 +188,27 @@ export class GsSerializerBd<OUT extends IGsWriter> implements IGsBuilder {
 	}
 
 	mixed(formattable?: boolean, children?: ($: IGsBuilder) => void): this {
-		if (this.state === IGsBuilderState.inAtt) this.popState();
+		if (this.state === IGsBuilderState.inAtt) this.emptyAtt();
 		switch (this.state) {
 		case IGsBuilderState.inMixed:
-			this.pushState(this.state);
-			this.out.mark('<');
-			this.state = IGsBuilderState.inHeadNode;
-			//!break;
 		case IGsBuilderState.root:
 		case IGsBuilderState.inList:
-		case IGsBuilderState.inProp:
+		case IGsBuilderState.inProp: {
+			this.pushState();
+			let prop: IGsName;
+			if (this.state === IGsBuilderState.inProp) {
+				prop = this.getProp();
+				this.handler.bodyMapProp(prop, false, this.peekNode());
+			}
+			const n = this.pushNodeAnonymous(this.state === IGsBuilderState.inMixed ? null : '', prop);
+			this.state = IGsBuilderState.inHeadNode;
+			//!break;
+		}
 		case IGsBuilderState.inHeadNode:
-			this.pushState(this.state);
-			this.out.mark('`');
+			this.pushState();
+			const n = this.peekNode();
+			n.bodyType = formattable ? "~`" : "`";
+			this.handler.startNode(n);
 			this.state = IGsBuilderState.inMixed;
 			break;
 		default:
@@ -184,19 +219,27 @@ export class GsSerializerBd<OUT extends IGsWriter> implements IGsBuilder {
 	}
 
 	map(children?: ($: IGsBuilder) => void): this {
-		if (this.state === IGsBuilderState.inAtt) this.popState();
+		if (this.state === IGsBuilderState.inAtt) this.emptyAtt();
 		switch (this.state) {
 		case IGsBuilderState.inMixed:
-			this.pushState(this.state);
-			this.out.mark('<');
-			this.state = IGsBuilderState.inHeadNode;
-			//!break;
 		case IGsBuilderState.root:
 		case IGsBuilderState.inList:
-		case IGsBuilderState.inProp:
+		case IGsBuilderState.inProp: {
+			this.pushState();
+			let prop: IGsName;
+			if (this.state === IGsBuilderState.inProp) {
+				prop = this.getProp();
+				this.handler.bodyMapProp(prop, false, this.peekNode());
+			}
+			const n = this.pushNodeAnonymous(this.state === IGsBuilderState.inMixed ? null : '', prop);
+			this.state = IGsBuilderState.inHeadNode;
+			//!break;
+		}
 		case IGsBuilderState.inHeadNode:
-			this.pushState(this.state);
-			this.out.mark('{');
+			this.pushState();
+			const n = this.peekNode();
+			n.bodyType = "{";
+			this.handler.startNode(n);
 			this.state = IGsBuilderState.inMap;
 			break;
 		default:
@@ -207,23 +250,32 @@ export class GsSerializerBd<OUT extends IGsWriter> implements IGsBuilder {
 	}
 
 	prop(name: string, esc?: gsEscaping): this {
-		if (this.state === IGsBuilderState.inAtt) this.popState();
+		if (this.state === IGsBuilderState.inAtt) this.emptyAtt();
 		switch (this.state) {
 		case IGsBuilderState.inMixed:
-			this.pushState(this.state);
-			this.out.mark('<');
-			this.state = IGsBuilderState.inHeadNode;
 		case IGsBuilderState.root:
 		case IGsBuilderState.inList:
-		case IGsBuilderState.inProp:
-			this.pushState(this.state);
+		case IGsBuilderState.inProp: {
+			this.pushState();
+			let prop: IGsName;
+			if (this.state === IGsBuilderState.inProp) {
+				prop = this.getProp();
+				this.handler.bodyMapProp(prop, false, this.peekNode());
+			}
+			const n = this.pushNodeAnonymous(this.state === IGsBuilderState.inMixed ? null : '', prop);
+			this.state = IGsBuilderState.inHeadNode;
 			//!break;
-		case IGsBuilderState.inHeadNode:
-			this.out.mark('{');
+		}
+		case IGsBuilderState.inHeadNode: {
+			this.pushState();
+			const n = this.peekNode();
+			n.bodyType = "{";
+			this.handler.startNode(n);
+			this.state = IGsBuilderState.inMap;
 			//!break;
+		}
 		case IGsBuilderState.inMap :
-			writeNameValue(this.out, name, esc);
-			this.out.mark('=');
+			setName(this.getProp(), name, esc);
 			this.state = IGsBuilderState.inProp;
 			break;
 		default:
@@ -233,24 +285,20 @@ export class GsSerializerBd<OUT extends IGsWriter> implements IGsBuilder {
 	}
 
 	end(): this {
-		if (this.state === IGsBuilderState.inAtt) this.popState();
+		if (this.state === IGsBuilderState.inAtt) this.emptyAtt();
 		switch (this.state) {
-		case IGsBuilderState.inList:
-			this.out.mark(']');
-			this.popState();
-			this.endNode();
-			break;
-		case IGsBuilderState.inMap:
 		case IGsBuilderState.inProp:
-			this.out.mark('}');
 			this.popState();
-			this.endNode();
-			break;
+			this.handler.bodyMapProp(this.getProp(), true, this.peekNode());
+			this.state = IGsBuilderState.inMap;
+			//!break;
+		case IGsBuilderState.inList:
+		case IGsBuilderState.inMap:
 		case IGsBuilderState.inMixed:
-			this.out.mark('`');
 			this.popState();
-			this.endNode();
-			break;
+			if (this.state as any === IGsBuilderState.inHeadNode) this.state = IGsBuilderState.inTailNode; //body node ended
+			else if (this.state as any !== IGsBuilderState.inTailNode) break; //was a simple node
+			//!break;
 		case IGsBuilderState.inHeadNode:
 		case IGsBuilderState.inTailNode:
 			this.endNode();
@@ -265,16 +313,26 @@ export class GsSerializerBd<OUT extends IGsWriter> implements IGsBuilder {
 		throw Error(msg);
 	}
 
+	/** Possible input states : inAtt */
+	protected emptyAtt() {
+		const a = this.peekNode().lastAtt;
+		a.value = null;
+		a.valueEsc = false;
+		a.valueFormattable = false;
+		this.popState();
+	}
+
+	/** Possible input states : inHeadNode, inTailNode, inList, inMap, inMixed */
 	protected endNode() {
-		if (this.state === IGsBuilderState.inTailNode || this.state === IGsBuilderState.inHeadNode) {
-			this.out.mark(">");
-			this.popState();
-		}
+		const n = this.peekNode();
+		if (this.state === IGsBuilderState.inHeadNode) this.handler.startNode(n);
+		this.popNode(n);
+		this.popState();
 		if (this.state === IGsBuilderState.inProp) this.state = IGsBuilderState.inMap;
 	}
 
-	protected pushState(st: IGsBuilderState) {
-		this.stack.push(st);
+	protected pushState() {
+		this.stack.push(this.state);
 	}
 
 	protected popState() {
@@ -283,7 +341,11 @@ export class GsSerializerBd<OUT extends IGsWriter> implements IGsBuilder {
 		this.stack.length = l;
 	}
 
-	protected writeChildren(children?: ($: IGsBuilder) => void) {
+	protected peekState(): IGsBuilderState {
+		return this.stack[this.stack.length - 1];
+	}
+
+	protected writeChildren(children: ($: IGsBuilder) => void) {
 		const s = this.stack.length;
 		children(this);
 		if (s !== this.stack.length) {
@@ -297,4 +359,32 @@ export class GsSerializerBd<OUT extends IGsWriter> implements IGsBuilder {
 
 }
 
+function setName(n: IGsName, name: string, esc?: gsEscaping) {
+	n.name = name;
+	n.nameEsc = esc == null ? !rawChars.test(name) : esc;
+}
+
+function setVal(v: IGsValue, value: string, esc?: gsEscaping, formattable?: boolean) {
+	v.value = value;
+	if (esc == null) esc = !rawChars.test(value);
+	v.valueEsc = formattable && esc === false ? true : esc;
+	v.valueFormattable = formattable || false;
+}
+
+/**
+ * Helper class for serializing a GS programmatically built content.
+ */
+export class GsBuilderToString extends GsBuilderToLH<IGsLogicalHandler> {
+
+	protected writer = new GsStringWriter();
+
+	constructor(options?: IGsSerializeOptions) {
+		super();
+		this.setHandler(buildSerializer(this.writer, options));
+	}
+
+	toString() {return this.writer.toString()}
+}
+
+/** IGsBuilderState labels. */
 const STATES = ["root", "inHeadNode", "inAtt", "inList", "inMixed", "inMap", "inProp", "inTailNode"];

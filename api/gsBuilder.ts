@@ -2,8 +2,9 @@ import {gsEscaping, gsSpecialType} from "api/gs";
 
 /**
  * Fluent API for building GS content.
+ *
  * ML example:
- *	const s = new GsSerializer();
+ *	const s = new GsBuilderToString();
  *	s.node("html").list(s => {
  *		s.node('head').list().node("title").text("x").end().end();
  *		s.node('body').list(s=>{
@@ -46,14 +47,16 @@ export interface IGsBuilder {
 	 * Possible states:
 	 * - 'root' | 'inList' | 'inMixed' | 'inMap'  | 'inProp' : open node -> 'inHeadNode'
 	 * - 'inHeadNode' | 'inTailNode' : close current node and open a sibling node -> 'inHeadNode'
-	 * - 'inAtt' : leave current attribute without value, close close current node and open a sibling node -> 'inHeadNode'
+	 * - 'inAtt' : leave current attribute without value, close current node and open a sibling node -> 'inHeadNode'
 	 */
-	nodeSpecial(specialType: gsSpecialType, name?: string, esc?: gsEscaping): this
+	nodeSpecial(specialType: gsSpecialType | null, name?: string, esc?: gsEscaping): this
 
 	/**
 	 * Possible states:
 	 * - 'inHeadNode' | 'inTailNode': add an attribute -> 'inAtt'
-	 * - 'inAtt': leave current attribute without value and assa new one -> 'inAtt'
+	 * - 'inAtt': leave current attribute without value and add new one -> 'inAtt'
+	 * - 'inList' | 'inMixed' | 'inMap' : close body and add a tail attribute -> 'inAtt'
+	 * - 'inProp' : add empty prop, close body and add a tail attribute -> 'inAtt'
 	 */
 	att(name: string, esc?: gsEscaping): this
 
@@ -61,8 +64,9 @@ export interface IGsBuilder {
 	 * Possible states:
 	 * - 'inHeadNode' | 'inTailNode': add an attribute -> 'inAtt'
 	 * - 'inAtt': leave current attribute without value and assa new one -> 'inAtt'
+	 * - 'inList' | 'inMixed' | 'inMap'  | 'inProp' : close body and add a tail attribute -> 'inAtt'
 	 */
-	attSpecial(specialType: gsSpecialType, name: string, esc?: gsEscaping): this
+	attSpecial(specialType: gsSpecialType | null, name: string, esc?: gsEscaping): this
 
 	/**
 	 * Possible states:
@@ -115,7 +119,7 @@ export interface IGsBuilder {
 	 * - 'inHeadNode': set bodyMap to current node and add a property -> 'inProp'
 	 * - 'inAtt': leave current attribute without value, set bodyMap to current node and add a property -> 'inProp'
 	 * - 'root' | 'inList' | 'inProp': add a simple map node and add a property -> 'inProp'
-	 * - 'inMixed': add a node with a bodyMap and add a property -> 'inProp'
+	 * - 'inMixed': add a map node and add a property -> 'inProp'
 	 */
 	prop(name: string, esc?: gsEscaping): this
 

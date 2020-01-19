@@ -24,7 +24,7 @@ export abstract class GsLogicalEventProducer<SH extends IGsLogicalHandler> {
 
 
 	constructor(handler?: SH) {
-		this.setHandler(handler);
+		if (handler) this.setHandler(handler);
 	}
 
 	setHandler(handler: SH | null): this {
@@ -36,6 +36,13 @@ export abstract class GsLogicalEventProducer<SH extends IGsLogicalHandler> {
 		let n = this.nodes[++this.depth];
 		if (!n) n = this.nodes[this.depth] = new GsEventNode(this.nodes[this.depth - 1]);
 		n.reset(nodeType, prop);
+		return n;
+	}
+
+	protected pushNodeAnonymous(nodeType: gsNodeType, prop: IGsName | undefined): GsEventNode {
+		const n = this.pushNode(nodeType, prop);
+		n.name = null;
+		n.nameEsc = false;
 		return n;
 	}
 
