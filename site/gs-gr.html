@@ -2,13 +2,13 @@
 <html lang="en">
 <head>
 	<meta charset="UTF-8">
-	<title>GS for Object Mapping</title>
+	<title>GS for object mapping and Graph</title>
 	<link rel="stylesheet" type="text/css" href="lib/common.css">
 	<script src="lib/common.js"></script>
 </head>
 <body>
 
-<h1>Generic-Syntax for Object Mapping</h1>
+<h1>Generic-Syntax for object mapping and graph</h1>
 
 <main>
 	<h2>JSON and XML shortcomings</h2>
@@ -65,30 +65,30 @@
 	<p>JSON-LD is today one of the best languages for serializing a typed objects graph.
 		But the inability to name objects in JSON has two flaws:</p>
 	<ul>
-		<li>The <code>@type</code> property affects readability.</li>
-		<li>The absence of named headers enriched with attributes prevents efficient event driven parsing of directly instantiated typed objects
-			(and avoiding instantiating costly intermediate generic objects).
+		<li>The absence of named headers enriched with attributes prevents an efficient event-driven parsing.
+			Typed objects can not be directly instantiated and an intermediate generic objects tree is needed.
 		</li>
+		<li>The <code>@type</code> property affects readability.</li>
 	</ul>
 
 	<p>On the other hand, XML lacks a key-node pair structure and is not well suited for this purpose.</p>
 
 	<p>GS solves these problems by combining JSON object properties and XML named object features.</p>
 
-	<h2>GS-OM language</h2>
+	<h2>GS-graph language</h2>
 
-	<p>GS-OM is a secure library for building and serializing complex and recursive graphs of typed objects.
+	<p>GS-graph is a secure library for building and serializing complex and recursive graphs of typed objects.
 		At parsing stage, according to its configuration, typed objects are instantiated, properties are assigned
 		and explicitly authorized methods can be called.</p>
 
 	<gs-viewer class="border scroll">
 <pre>
-&lt;?OM>
+&lt;?graph>
 &lt;User account=2197 %id=JOM {
   name= "John Merting"
-  chief= <%ref"MAD">
+  chief= <%ref "MAD">
   groups= [
-    <%ref"mgrs">
+    <%ref "MGRS">
   ]
 }>
 &lt;User account=2123 %id=MAD {
@@ -99,22 +99,19 @@
     }>
   ]
   addTemporaryDelegation = <%call [
-	<%ref"JOM">
+	<%ref "JOM">
   	&lt;Date day='2019-12-22'>
   	14
   ]>
 }>
-&lt;Group id=35 %id=mgrs{
+&lt;Group id=35 %id=MGRS{
   name= "Managers"
-}>
-<%with ref=admins {
-  addAlias= <%call ["AdminSys"]>
 }>
 </pre>
 	</gs-viewer>
 
-	<p>GS-OM uses the GS attribute and node special type <code>%</code> <em>instruction</em> to link objects and call methods at the building stage.</p>
-	<p><em class="warn">GS-OM is a project, it is currently not implemented.</em></p>
+	<p>GS-graph uses the GS attribute and node special type <code>%</code> <em>instruction</em> to link objects and call methods at the building stage.</p>
+	<p><em class="warn">A first experimental GS-graph building implementation is available in Typescript and Javascript.</em></p>
 </main>
 </body>
 </html>

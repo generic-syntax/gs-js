@@ -10,7 +10,7 @@ window.addEventListener("load", async () => {
 			{fileName !== "index.html" ? <a href="index.html">Home</a> : undefined}
 			<a href="gs-on.html">GS for JSON</a>
 			<a href="gs-ml.html">GS for XML and HTML</a>
-			<a href="gs-om.html">GS for Object Mapping</a>
+			<a href="gs-gr.html">GS for graph</a>
 			<a href="gsDefinition.html">GS definition</a>
 			<a href="gsApi.html">GS API</a>
 		</nav>
