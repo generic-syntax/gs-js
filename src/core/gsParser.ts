@@ -21,8 +21,8 @@ export class GsParser<H extends IGsLogicalHandler> extends GsLogicalEventProduce
 	}
 
 	/**
-	 * contexte entrant : <⋏>   {⋏}   [⋏]   "⋏"   |⋏""   ~⋏""   `⋏`   a⋏b   a⋏[
-	 * contexte sortant : <>⋏   {}⋏   []⋏   ""⋏   |""⋏   ~""⋏   ``⋏   ab⋏   a⋏[
+	 * in context : <⋏>   {⋏}   [⋏]   "⋏"   |⋏""   ~⋏""   `⋏`   a⋏b   a⋏[
+	 * out context : <>⋏   {}⋏   []⋏   ""⋏   |""⋏   ~""⋏   ``⋏   ab⋏   a⋏[
 	 */
 	protected parseNodeLike(c: number, prop?: IGsName) {
 		let n: GsEventNode;
@@ -100,8 +100,8 @@ export class GsParser<H extends IGsLogicalHandler> extends GsLogicalEventProduce
 	}
 
 	/**
-	 * contexte entrant : <⋏tag>
-	 * contexte sortant : <tag>⋏
+	 * in context : <⋏tag>
+	 * out context : <tag>⋏
 	 */
 	protected parseNode(prop?: IGsName) {
 		let c = this.in.readCode();
@@ -193,8 +193,8 @@ export class GsParser<H extends IGsLogicalHandler> extends GsLogicalEventProduce
 	}
 
 	/**
-	 * contexte entrant : `⋏`   ~`⋏`   `⋏a<x>`
-	 * contexte sortant : ``⋏   ~``⋏   `a<x>`⋏
+	 * in context : `⋏`   ~`⋏`   `⋏a<x>`
+	 * out context : ``⋏   ~``⋏   `a<x>`⋏
 	 */
 	protected parseMap() {
 		let c = this.in.readCodeNoSpace();
@@ -252,8 +252,8 @@ export class GsParser<H extends IGsLogicalHandler> extends GsLogicalEventProduce
 	}
 
 	/**
-	 * contexte entrant : a⋏b   '⋏ab'   |⋏'ab|'    >⋏
-	 * contexte sortant : ab⋏   'ab'⋏   |'ab|'⋏    >⋏
+	 * in context : a⋏b   '⋏ab'   |⋏'ab|'    >⋏
+	 * out context : ab⋏   'ab'⋏   |'ab|'⋏    >⋏
 	 */
 	protected fillName(c: number, name: IGsName): boolean {
 		if (c === QUOTE) {
@@ -279,8 +279,8 @@ export class GsParser<H extends IGsLogicalHandler> extends GsLogicalEventProduce
 
 
 	/**
-	 * contexte entrant : a⋏=b c>   ⋏a=b~"   >⋏    "⋏
-	 * contexte sortant : a=b c>⋏   a=b~⋏"   >⋏    "⋏
+	 * in context : a⋏=b c>   ⋏a=b~"   >⋏    "⋏
+	 * out context : a=b c>⋏   a=b~⋏"   >⋏    "⋏
 	 */
 	protected fillAtts(c: number, n: GsEventNode, inTail: boolean): number {
 		while (c !== NODE_END && c !== BODYLIST_START && c !== BODYMAP_START && c !== BODYTEXT && c !== BOUND_BODYTEXT && c !== BODYMIXED && c !== FORMATTABLE) {
