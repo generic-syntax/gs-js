@@ -90,9 +90,23 @@ export interface IGsEventNode extends IGsName {
 	/** Attributes in tail node: only available in IGsLogicalHandler.endNode() and not in IGsLogicalHandler.startNode() */
 	readonly firstTailAtt: IGsEventAtt | null
 
-	getAttribute(key: string | number, after?: IGsEventAtt): IGsEventAtt | null
+	getAttribute(name: string, specialType?: gsSpecialType | null, after?: IGsEventAtt): IGsEventAtt | null
 
-	getAttr(key: string | number): string | null
+	/**
+	 * Return the value of the first attribute with this name and type.
+	 * @return null if attribute exist with no value, undefined if attribute does not exist.
+	 */
+	getAttr(name: string, specialType?: gsSpecialType | null): string | null | undefined
+
+	/**
+	 * Build a path from the root for retrieving this node. Useful for test and debug.
+	 * Format:
+	 * - each anonymous node: {offset} //TODO add offset in IGsEventNode
+	 * - each named node: {offset} '~' {name}
+	 * - each prop: {name} '='
+	 * - node separator: '>'
+	 */
+	toPath(): string;
 }
 
 /**
@@ -108,6 +122,12 @@ export interface IGsEventAtt extends IGsName, IGsValue {
 	readonly offset: number
 	readonly inTail: boolean
 	readonly next: IGsEventAtt | null
+
+	/**
+	 * Build a path from the root for retrieving this attribute. Useful for test and debug.
+	 * Attribute format after the owner path: '@' {offset} '~' {name}
+	 */
+	toPath(owner: IGsEventNode): string;
 }
 
 export type gsEscaping = /*raw*/ false |  /*quoted*/ true |  /*bounded*/ string

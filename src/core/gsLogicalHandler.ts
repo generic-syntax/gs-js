@@ -75,7 +75,7 @@ export abstract class GsLogicalEventProducer<SH extends IGsLogicalHandler> {
  * Partial node definition used in IGsLogicalHandler
  */
 export class GsEventNode implements IGsEventNode {
-	readonly parent: IGsEventNode | null;
+	readonly parent: GsEventNode | null;
 	readonly depth: number;
 	holderProp: IGsName | undefined = undefined;
 
@@ -94,29 +94,47 @@ export class GsEventNode implements IGsEventNode {
 
 	lastAtt: GsEventAtt | null = null;
 
-	constructor(parent: IGsEventNode) {
+	constructor(parent: GsEventNode) {
 		this.parent = parent;
 		this.depth = parent ? parent.depth + 1 : 0;
 	}
 
-	getAttribute(key: string | number, after?: IGsEventAtt): IGsEventAtt | null {
+	getAttribute(name: string, specialType: gsSpecialType | null = null, after?: IGsEventAtt): IGsEventAtt | null {
 		let a = after ? after.next : this.firstAtt;
-		if (typeof key === 'number') {
-			while (a) {
-				if (a.offset === key) return a;
-				a = a.next;
-			}
-		} else while (a) {
-			if (a.name === key) return a;
+		while (a) {
+			if (a.name === name && a.attType === specialType) return a;
 			a = a.next;
 		}
 		return null;
 	}
 
-	getAttr(key: string | number): string | null {
-		const a = this.getAttribute(key);
-		return a ? a.value : null;
+	getAttr(name: string, specialType?: gsSpecialType | null): string | null | undefined {
+		return this.getAttribute(name, specialType)?.value;
 	}
+
+	toPath(): string {
+		const b: string[] = [];
+		this._buildPath(b);
+		return b.join("");
+	}
+
+	_buildPath(buf: string[]) {
+		//TODO escape names in path
+		if (this.parent) {
+			this.parent._buildPath(buf);
+			buf.push('>');
+		}
+		if (this.holderProp) {
+			writeName(this.holderProp, buf);
+			buf.push('=');
+		}
+		buf.push('0'); //TODO offset
+		if (this.name) {
+			buf.push('~');
+			writeName(this, buf);
+		}
+	}
+
 
 	reset(nodeType: gsNodeType, prop: IGsName | undefined) {
 		this.nodeType = nodeType;
@@ -151,6 +169,27 @@ export class GsEventNode implements IGsEventNode {
 	}
 }
 
+function writeName(n: IGsName, buf: string[]) {
+	if (n.nameEsc === false) {
+		buf.push(n.name);
+	} else if (n.nameEsc === true) {
+		let c = n.name;
+		buf.push("'");
+		const r = /['\\]/;
+		let i = c.search(r);
+		while (i >= 0) {
+			if (i > 0) buf.push(c.substring(0, i));
+			buf.push(c.charCodeAt(i) === 92 ? "\\\\" : "\\'");
+			c = c.substring(i + 1);
+			i = c.search(r);
+		}
+		if (c.length > 0) buf.push(c);
+		buf.push("'");
+	} else {
+		buf.push("|", n.nameEsc, "'", n.name, "|", n.nameEsc, "'");
+	}
+}
+
 
 /**
  * Attribute definition used in IGsLogicalHandler
@@ -179,5 +218,13 @@ export class GsEventAtt implements IGsEventAtt {
 			this.offset = 0;
 			this._next = null;
 		}
+	}
+
+	toPath(owner: IGsEventNode): string {
+		const b: string[] = [];
+		(owner as GsEventNode)._buildPath(b);
+		b.push("@", this.offset.toString(), "~");
+		writeName(this, b);
+		return b.join("");
 	}
 }
