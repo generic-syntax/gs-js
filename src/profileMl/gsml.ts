@@ -6,7 +6,7 @@ import {buildSerializer, GsStringWriter} from "../core/gsSerializer.js";
 
 
 export const GSML = {
-	parse(domImpl: 'xml' | 'xmlNs' | 'html', gsML: string, doc?: XMLDocument): DocumentFragment {
+	parse(domImpl: 'xml' | 'xmlNs' | 'html', gsml: string, doc?: XMLDocument): DocumentFragment {
 		if (!doc) {
 			if (domImpl === "html") {
 				doc = document instanceof HTMLDocument ? document : document.implementation.createHTMLDocument();
@@ -15,7 +15,7 @@ export const GSML = {
 			}
 		}
 		const frag = doc.createDocumentFragment();
-		GSML.parseAppend(domImpl, gsML, doc);
+		GSML.parseAppend(domImpl, gsml, doc);
 		return frag;
 	},
 

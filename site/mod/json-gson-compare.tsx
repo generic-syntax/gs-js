@@ -31,7 +31,7 @@ export class JsonGsonCompare extends HTMLElement {
 				const toJso = new GsToJsonLH();
 				const toGsonInline = new GsSerializer();
 				new GsParser(new GsMultiLH(toJso, toGsonInline)).parse(gsonBlock);
-				j = toJso.json;
+				j = toJso.result;
 				jsonInline = JSON.stringify(j);
 				jsonBlock = JSON.stringify(j, null, "  ");
 				gsonInline = toGsonInline.out.toString();

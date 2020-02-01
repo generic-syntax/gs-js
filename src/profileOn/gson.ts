@@ -6,8 +6,8 @@ import {buildSerializer, GsStringWriter} from "../core/gsSerializer.js";
 
 
 export const GSON = {
-	parse(gsON: string): json {
-		return new GsParser(new GsToJsonLH()).parse(gsON).handler.json;
+	parse(gson: string): json {
+		return new GsParser(new GsToJsonLH()).parse(gson).handler.result;
 	},
 
 	stringify(object: any, options?: IGsonStringifyOptions): string {
@@ -125,12 +125,12 @@ export type json = string | number | boolean | null | { [p: string]: json } | js
 export class GsToJsonLH implements IGsLogicalHandler {
 
 	/** Json result. */
-	json: json = undefined;
+	result: json = undefined;
 
 	protected ancestors: json[] = [];
 
 	reset(): this {
-		this.json = undefined;
+		this.result = undefined;
 		this.ancestors.length = 0;
 		return this;
 	}
@@ -143,7 +143,7 @@ export class GsToJsonLH implements IGsLogicalHandler {
 			case "{":
 				v = {};
 				for (let att = node.firstAtt; att; att = att.next) {
-					v[att.name] = this.toJsonVal(att);
+					if (!att.attType) v[att.name] = this.toJsonVal(att);
 				}
 				break;
 			case "[":
@@ -158,12 +158,12 @@ export class GsToJsonLH implements IGsLogicalHandler {
 		//attach it
 		if (v !== undefined) this.attach(v, node);
 		this.ancestors.push(v);
-		this.json = v;
+		this.result = v;
 	}
 
 	bodyMapProp(name: IGsName, isNull: boolean, holder: IGsEventNode): void {
-		if (!this.json) return; //node in specialType context
-		if (isNull) (this.json as any)[name.name] = null;
+		if (!this.result) return; //node in specialType context
+		if (isNull) (this.result as any)[name.name] = null;
 	}
 
 	bodyText(text: IGsEventText, holder: IGsEventNode): void {
@@ -173,26 +173,26 @@ export class GsToJsonLH implements IGsLogicalHandler {
 	endNode(node: IGsEventNode): void {
 		if (!node.nodeType && (node.bodyType === '"' || node.bodyType === "")) return; //text or empty body node
 		const last = --this.ancestors.length - 1;
-		if (last >= 0) this.json = this.ancestors[last];
+		if (last >= 0) this.result = this.ancestors[last];
 	}
 
 	protected attach(v: json, holder: IGsEventNode) {
 		if (this.ancestors.length === 0) {
 			//we are at root
-			if (this.json === undefined) {
-				this.json = v;
+			if (this.result === undefined) {
+				this.result = v;
 			} else {
 				//it's a second objet at root, auto-wrap in an array
-				this.json = [this.json, v];
-				this.ancestors.push(this.json);
+				this.result = [this.result, v];
+				this.ancestors.push(this.result);
 			}
 			return;
 		}
-		if (this.json) {
+		if (this.result) {
 			if (holder.holderProp) {
-				(this.json as any)[holder.holderProp.name] = v;
+				(this.result as any)[holder.holderProp.name] = v;
 			} else {
-				(this.json as json[]).push(v);
+				(this.result as json[]).push(v);
 			}
 		}
 	}

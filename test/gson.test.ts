@@ -34,6 +34,7 @@ describe("gson", function () {
 	});
 
 	it("comments", function () {
+		gsToJson('[1<#a[xx]>2]', [1, 2]);
 		gsToJson('{a=1<#TODO"cmt">b=[2<#TODO"cmt">3]}', {a: 1, b: [2, 3]});
 		gsToJson('{a=1<#TODO[true false]>b=[2<#TODO{z="s"}>3]}', {a: 1, b: [2, 3]});
 	});
@@ -79,6 +80,7 @@ describe("gson", function () {
 		gsToJson('3 4 true false null', [3, 4, true, false, null]);
 		//gsToJson('"a"12 true true false -123.3 {a=1}[null{}{p=32 p2="33"}]', ["a", 12, true, true, false, -123.3, {a: 1}, [null, {}, {p:32, p2:"33"}]]);
 	});
+
 });
 
 function toGs(jsonIn: any, gs?: string) {
@@ -90,16 +92,16 @@ function toGs(jsonIn: any, gs?: string) {
 	new GsFromJson().setHandler(new GsMultiLH(toGs, toJson)).build(jsonIn);
 	if (gs) expect(toGs.out.toString()).toEqual(gs);
 	else console.log(toGs.out.toString());
-	expect(JSON.stringify(toJson.json)).toEqual(JSON.stringify(jsonIn));
+	expect(JSON.stringify(toJson.result)).toEqual(JSON.stringify(jsonIn));
 	//gs -> GsLogicalHandler -> json
 	if (gs) {
 		new GsParser(toJson.reset()).parse(gs);
-		expect(JSON.stringify(toJson.json)).toEqual(JSON.stringify(jsonIn));
+		expect(JSON.stringify(toJson.result)).toEqual(JSON.stringify(jsonIn));
 	}
 }
 
 function gsToJson(gs: string, jsonOut: any) {
 	const toJson = new GsToJsonLH();
 	new GsParser(toJson).parse(gs);
-	expect(JSON.stringify(toJson.json)).toEqual(JSON.stringify(jsonOut));
+	expect(JSON.stringify(toJson.result)).toEqual(JSON.stringify(jsonOut));
 }
