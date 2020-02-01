@@ -15,7 +15,13 @@ export class GsMinifiedLH<SH extends IGsSyntaxHandler> extends GsLH2SH<SH> {
  * For human pretty reading, white-spaces are inserted between attributes and before value properties in body map.
  */
 export class GsPrettyLH<SH extends IGsSyntaxHandler> extends GsLH2SH<SH> {
-	startNode(node: IGsEventNode): void {
+	startNode(node: IGsEventNode, bodyText?: IGsEventText): void {
+		if (node.holderProp) {
+			const isNull = node.nodeType === '' && node.bodyType === '';
+			this.handler.property(node.holderProp, isNull);
+			if (isNull) return;
+			this.handler.whiteSpaces(' ');
+		}
 		if (node.nodeType !== '') {
 			this.handler.headNode(node, node.nodeType);
 			for (let att = node.firstAtt; att; att = att.next) {
@@ -31,12 +37,10 @@ export class GsPrettyLH<SH extends IGsSyntaxHandler> extends GsLH2SH<SH> {
 		case "~`":
 			this.handler.startBody(node.bodyType);
 			break;
+		case '"':
+			this.handler.text(bodyText, node.nodeType === '' && node.parent?.isBodyMixed);
+			break;
 		}
-	}
-
-	bodyMapProp(name: IGsName, isNull: boolean, holder: IGsEventNode): void {
-		this.handler.property(name, isNull);
-		if (!isNull) this.handler.whiteSpaces(' ');
 	}
 
 	endNode(node: IGsEventNode): void {
@@ -83,19 +87,19 @@ export class GsIndentLH<SH extends IGsSyntaxHandler> extends GsPrettyLH<SH> {
 		this.spaces = [];
 	}
 
-	startNode(node: IGsEventNode): void {
-		if (node.holderProp === undefined) {
+	startNode(node: IGsEventNode, bodyText?: IGsEventText): void {
+		if (!node.holderProp) {
 			const p = node.parent;
 			if (!p || !p.isBodyMixed) this.addIndent(p);
+		} else {
+			this.addIndent(node.parent);
 		}
-		super.startNode(node);
-		if (node.bodyType === "[" || node.bodyType === "{") this.addLineFeed();
-	}
-
-	bodyMapProp(name: IGsName, isNull: boolean, holder: IGsEventNode): void {
-		this.addIndent(holder);
-		super.bodyMapProp(name, isNull, holder);
-		if (isNull) this.addLineFeed();
+		super.startNode(node, bodyText);
+		switch (node.bodyType) {
+		case "[":
+		case "{":
+			this.addLineFeed();
+		}
 	}
 
 	endNode(node: IGsEventNode): void {
@@ -158,27 +162,23 @@ export class GsUnformatLH<LH extends IGsLogicalHandler> extends GsLogicalEventPr
 		this.txt.valueFormattable = true;
 	}
 
-	startNode(node: IGsEventNode): void {
+	startNode(node: IGsEventNode, bodyText?: IGsEventText): void {
 		const n = this.pushNodeFrom(node);
 		for (let att = node.firstAtt; att; att = att.next) {
 			const a = n.pushAttFrom(att);
 			if (a.valueFormattable && a.value) a.value = this.unindent(a.value);
 		}
-		this.handler.startNode(n);
-	}
-
-	bodyMapProp(name: IGsName, isNull: boolean, holder: IGsEventNode): void {
-		this.handler.bodyMapProp(name, isNull, this.peekNode());
-	}
-
-	bodyText(text: IGsEventText, holder: IGsEventNode): void {
-		if (text.valueFormattable && text.value) {
-			this.txt.value = this.unindent(text.value);
-			this.txt.valueEsc = text.valueEsc;
-			this.handler.bodyText(this.txt, this.peekNode());
-		} else {
-			this.handler.bodyText(text, this.peekNode());
+		let t: IGsEventText;
+		if (bodyText) {
+			if (bodyText.valueFormattable && bodyText.value) {
+				this.txt.value = this.unindent(bodyText.value);
+				this.txt.valueEsc = bodyText.valueEsc;
+				t = this.txt;
+			} else {
+				t = bodyText;
+			}
 		}
+		this.handler.startNode(n, t);
 	}
 
 	endNode(node: IGsEventNode): void {

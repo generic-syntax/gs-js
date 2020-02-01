@@ -1,14 +1,24 @@
 /**
  * Logical event-driven API.
  */
-
 export interface IGsLogicalHandler {
-	startNode(node: IGsEventNode): void
 
-	bodyMapProp(name: IGsName, isNull: boolean, holder: IGsEventNode): void
+	/**
+	 * Notify the start of a node.
+	 *
+	 * @param node Node with its head attributes, his holder property (if it is declared in a map) and its ancestors.
+	 *   For empty keys in a map <pre>{key}</pre>, the node type is simple ('') and the body type is empty (''),
+	 *   ie a node that has no serialized representation, but a node.holderProp specified.
+	 * @param bodyText Must be specified only if node.bodyType==='"', ie a text body node ('"').
+	 */
+	startNode(node: IGsEventNode, bodyText?: IGsEventText): void
 
-	bodyText(text: IGsEventText, holder: IGsEventNode): void
-
+	/**
+	 * Notify the end of a node.
+	 * Each startNode() call has it corresponding endNode() call, even for an empty node or an empty key in a map.
+	 *
+	 * @param node Node with its head and tail attributes and its ancestors
+	 */
 	endNode(node: IGsEventNode): void
 }
 
@@ -16,7 +26,7 @@ export interface IGsLogicalHandler {
  * Low level flat stream event-driven API for whitespaces handling.
  */
 export interface IGsSyntaxHandler {
-	headNode(name: IGsName, specialType?: gsSpecialType): void
+	headNode(name: IGsName, specialType?: gsSpecialType | null): void
 
 	attribute(name: IGsName, value: IGsValue, specialType?: gsSpecialType | null, spBeforeEq?: string, spAfterEq?: string): void
 
@@ -75,36 +85,57 @@ export interface IGsEventText extends Readonly<IGsValue> {
  * Partial node definition used in IGsLogicalHandler
  */
 export interface IGsEventNode extends IGsName {
+	/** Parent node. */
 	readonly parent: IGsEventNode | null
+
+	/** Holder property when the node is declared in a map. */
 	readonly holderProp: IGsName | undefined
+
+	/** Depth of this node, ie count of non null parents. */
 	readonly depth: number
 
+	/** Node type : standard (null), simple('') or special type('#', '&', '?' or '%').*/
 	readonly nodeType: gsNodeType
+
+	/** Name of the node. */
 	readonly name: string
+
+	/** Escaping rule for the node. */
 	readonly nameEsc: gsEscaping
+
+	/** First tail attribute. */
 	readonly firstAtt: IGsEventAtt | null
 
+	/** Body type of the node: list ('['), map ('{'), text ('"'), empty (''), mixed ('`') or mixed formattable ('~`'). */
 	readonly bodyType: gsEventBodyType
+
+	/** Helper to know if the body type node is mixed or mixed formattable ('`' or '~`'). */
 	readonly isBodyMixed: boolean;
 
 	/** Attributes in tail node: only available in IGsLogicalHandler.endNode() and not in IGsLogicalHandler.startNode() */
 	readonly firstTailAtt: IGsEventAtt | null
 
+	/**
+	 * Get the first attribute with this name and type.
+	 * @return the attribute or null if not found.
+	 */
 	getAttribute(name: string, specialType?: gsSpecialType | null, after?: IGsEventAtt): IGsEventAtt | null
 
 	/**
-	 * Return the value of the first attribute with this name and type.
-	 * @return null if attribute exist with no value, undefined if attribute does not exist.
+	 * Get the value of the first attribute with this name and type.
+	 * @return null if the attribute exist with no value, undefined if the attribute does not exist.
 	 */
 	getAttr(name: string, specialType?: gsSpecialType | null): string | null | undefined
 
 	/**
 	 * Build a path from the root for retrieving this node. Useful for test and debug.
-	 * Format:
+	 * Path format:
 	 * - each anonymous node: {offset} //TODO add offset in IGsEventNode
 	 * - each named node: {offset} '~' {name}
 	 * - each prop: {name} '='
 	 * - node separator: '>'
+	 *
+	 * Names use the same escaping rules as in GS (raw, quoted or bounded).
 	 */
 	toPath(): string;
 }

@@ -57,7 +57,7 @@ describe("gsml", function () {
 	it("pi", function () {
 		const div = <div/> as Element;
 		div.appendChild(document.createProcessingInstruction("php", `ECHO 'Hello World!<br>'`));
-		htmlToGs(div, `<div[<&php"ECHO 'Hello World!<br>'">]>`);
+		htmlToGs(div, `<div[<%php"ECHO 'Hello World!<br>'">]>`);
 	});
 
 })

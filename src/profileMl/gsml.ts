@@ -1,4 +1,4 @@
-import {gsEscaping, IGsEventNode, IGsEventText, IGsLogicalHandler, IGsName, IGsSerializeOptions, rawChars, whiteSpaces} from "../../api/gs.js";
+import {gsEscaping, IGsEventNode, IGsEventText, IGsLogicalHandler, IGsSerializeOptions, rawChars, whiteSpaces} from "../../api/gs.js";
 import {IGsWriter} from "../../api/gsSerializer.js";
 import {GsEventAtt, GsEventNode, GsLogicalEventProducer} from "../core/gsLogicalHandler.js";
 import {GsParser} from "../core/gsParser.js";
@@ -152,11 +152,10 @@ export class GsFromDomXml<H extends IGsLogicalHandler> extends GsLogicalEventPro
 			if (node.hasChildNodes()) {
 				if (isChildrenTextOnly(node as Element) && this.textBody(node as Element)) {
 					n.bodyType = '"';
-					this.handler.startNode(n);
 					this.txt.value = node.textContent; //merge en cas d'une succession de noeuds textes.
 					this.txt.valueEsc = this.escapingBody(node, this.txt.value);
 					this.txt.valueFormattable = this.formattableBody(node);
-					this.handler.bodyText(this.txt, n);
+					this.handler.startNode(n, this.txt);
 				} else {
 					n.bodyType = this.mixedBody(node as Element) ? this.formattableBody(node) ? "~`" : "`" : "[";
 					this.handler.startNode(n);
@@ -179,8 +178,7 @@ export class GsFromDomXml<H extends IGsLogicalHandler> extends GsLogicalEventPro
 			this.txt.value = node.nodeValue;
 			this.txt.valueEsc = this.escapingBody(node, this.txt.value);
 			this.txt.valueFormattable = this.formattableBody(node);
-			this.handler.startNode(n);
-			this.handler.bodyText(this.txt, n);
+			this.handler.startNode(n, this.txt);
 			this.popNode(n);
 			break;
 		case Node.COMMENT_NODE:
@@ -190,20 +188,18 @@ export class GsFromDomXml<H extends IGsLogicalHandler> extends GsLogicalEventPro
 			this.txt.value = node.nodeValue;
 			this.txt.valueEsc = this.escapingBody(node, this.txt.value);
 			this.txt.valueFormattable = this.formattableBody(node);
-			this.handler.startNode(n);
-			this.handler.bodyText(this.txt, n);
+			this.handler.startNode(n, this.txt);
 			this.popNode(n);
 			break;
 		case Node.PROCESSING_INSTRUCTION_NODE:
-			n = this.pushNode("&", undefined);
+			n = this.pushNode("%", undefined);
 			n.name = node.nodeName;
 			n.nameEsc = this.escapingName(node);
 			n.bodyType = '"';
 			this.txt.value = node.nodeValue;
 			this.txt.valueEsc = this.escapingBody(node, this.txt.value);
 			this.txt.valueFormattable = this.formattableBody(node);
-			this.handler.startNode(n);
-			this.handler.bodyText(this.txt, n);
+			this.handler.startNode(n, this.txt);
 			this.popNode(n);
 			break;
 		case Node.DOCUMENT_NODE:
@@ -325,41 +321,39 @@ export class GsToDomXmlLH implements IGsLogicalHandler {
 	}
 
 
-	startNode(node: IGsEventNode): void {
-		if (node.nodeType !== null) return;
-		switch (node.bodyType) {
-		case '"':
-			if (!node.name) return;//pure textNode
-			//no break;
-		case "[":
-		case "`":
-		case "~`":
-		case "":
-			const elt = this.parent.appendChild(this.doc.createElement(node.name));
-			for (let a = node.firstAtt; a; a = a.next) {
-				elt.setAttribute(a.name, a.value);
+	startNode(node: IGsEventNode, bodyText?: IGsEventText): void {
+		if (node.nodeType === null) {
+			//standard nodeType
+			switch (node.bodyType) {
+			case '"':
+				if (!node.name) break;//pure textNode
+				//!break;
+			case "[":
+			case "`":
+			case "~`":
+			case "":
+				const elt = this.parent.appendChild(this.doc.createElement(node.name));
+				for (let a = node.firstAtt; a; a = a.next) {
+					elt.setAttribute(a.name, a.value);
+				}
+				this.parent = elt;
+				break;
 			}
-			this.parent = elt;
-			break;
 		}
-	}
-
-	bodyMapProp(name: IGsName, isNull: boolean, holder: IGsEventNode): void {
-	}
-
-	bodyText(text: IGsEventText, holder: IGsEventNode): void {
-		switch (holder.nodeType) {
-		case "":
-		case null:
-			this.parent.appendChild(this.doc.createTextNode(text.value));
-			break;
-		case "#":
-			this.parent.appendChild(this.doc.createComment(text.value));
-			break;
-		case "&":
-		case "%":
-			this.parent.appendChild(this.doc.createProcessingInstruction(holder.name, text.value));
-			break;
+		if (bodyText) {
+			switch (node.nodeType) {
+			case "":
+			case null:
+				this.parent.appendChild(this.doc.createTextNode(bodyText.value));
+				break;
+			case "#":
+				this.parent.appendChild(this.doc.createComment(bodyText.value));
+				break;
+			case "&":
+			case "%":
+				this.parent.appendChild(this.doc.createProcessingInstruction(node.name, bodyText.value));
+				break;
+			}
 		}
 	}
 

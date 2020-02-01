@@ -244,7 +244,13 @@ export class GsHtmlColorizedSH extends GsHtmlColorized implements IGsSyntaxHandl
  */
 export class GsHtmlColorizedLH extends GsHtmlColorized implements IGsLogicalHandler {
 
-	startNode(node: IGsEventNode): void {
+	startNode(node: IGsEventNode, bodyText?: IGsEventText): void {
+		if (node.holderProp) {
+			const isNull = node.nodeType === '' && node.bodyType === '';
+			this.property(node.holderProp, isNull);
+			if (isNull) return;
+			this.space(' ');
+		}
 		if (node.nodeType !== '') {
 			if (node.nodeType === null) {
 				this.mark("<");
@@ -262,6 +268,8 @@ export class GsHtmlColorizedLH extends GsHtmlColorized implements IGsLogicalHand
 			break;
 		case '"':
 			this.parent = this.addSpan("text");
+			this.text(bodyText, node.parent?.isBodyMixed);
+			this.parent = this.parent.parentNode; //text
 			break;
 		case "`":
 		case "~`":
@@ -269,15 +277,6 @@ export class GsHtmlColorizedLH extends GsHtmlColorized implements IGsLogicalHand
 			this.mark(node.bodyType);
 			break;
 		}
-	}
-
-	bodyMapProp(name: IGsName, isNull: boolean, holder: IGsEventNode): void {
-		this.property(name, isNull);
-		if (!isNull) this.space(' ');
-	}
-
-	bodyText(text: IGsEventText, holder: IGsEventNode): void {
-		this.text(text, holder.parent?.isBodyMixed);
 	}
 
 	endNode(node: IGsEventNode): void {
@@ -322,12 +321,10 @@ export class GsHtmlColorizedLH extends GsHtmlColorized implements IGsLogicalHand
  */
 export class GsHtmlBlockLH extends GsHtmlColorizedLH {
 
-	startNode(node: IGsEventNode): void {
-		if (!node.holderProp) {
-			this.parent = this.addDiv("box");
-			this.parent = this.addSpan("head");
-		}
-		super.startNode(node);
+	startNode(node: IGsEventNode, bodyText?: IGsEventText): void {
+		this.parent = this.addDiv("box");
+		this.parent = this.addSpan("head");
+		super.startNode(node, bodyText);
 		switch (node.bodyType) {
 		case "[":
 		case "{":
@@ -337,26 +334,16 @@ export class GsHtmlBlockLH extends GsHtmlColorizedLH {
 		}
 	}
 
-	bodyMapProp(name: IGsName, isNull: boolean, holder: IGsEventNode): void {
-		this.parent = this.addDiv("box");
-		this.parent = this.addSpan("head");
-		super.bodyMapProp(name, isNull, holder);
-		if (isNull) this.parent = this.parent.parentNode.parentNode; //head box
-	}
-
 	endNode(node: IGsEventNode): void {
 		switch (node.bodyType) {
 		case "[":
-			this.parent = this.parent.parentNode; //ch
-			this.parent = this.addDiv("tail");
-			break;
 		case "{":
 			this.parent = this.parent.parentNode; //ch
 			this.parent = this.addDiv("tail");
 			break;
 		}
 		super.endNode(node);
-		this.parent = this.parent.parentNode.parentNode; //tail box
+		this.parent = this.parent.parentNode.parentNode; // (head | tail) box
 	}
 
 	protected addDiv(cls: string): HTMLDivElement {

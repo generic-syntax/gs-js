@@ -5,7 +5,12 @@ export abstract class GsLH2SH<SH extends IGsSyntaxHandler> implements IGsLogical
 
 	constructor(public handler: SH) {}
 
-	startNode(node: IGsEventNode): void {
+	startNode(node: IGsEventNode, bodyText?: IGsEventText): void {
+		if (node.holderProp) {
+			const isNull = node.nodeType === '' && node.bodyType === '';
+			this.handler.property(node.holderProp, isNull);
+			if (isNull) return;
+		}
 		if (node.nodeType !== '') {
 			this.handler.headNode(node, node.nodeType);
 			if (!node.name && node.firstAtt) this.handler.whiteSpaces(' ');
@@ -18,15 +23,10 @@ export abstract class GsLH2SH<SH extends IGsSyntaxHandler> implements IGsLogical
 		case "~`":
 			this.handler.startBody(node.bodyType);
 			break;
+		case '"':
+			this.handler.text(bodyText, node.nodeType === '' && node.parent?.isBodyMixed);
+			break;
 		}
-	}
-
-	bodyMapProp(name: IGsName, isNull: boolean, holder: IGsEventNode): void {
-		this.handler.property(name, isNull);
-	}
-
-	bodyText(text: IGsEventText, holder: IGsEventNode): void {
-		this.handler.text(text, holder.nodeType === '' && holder.parent?.isBodyMixed);
 	}
 
 	endNode(node: IGsEventNode): void {

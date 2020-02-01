@@ -37,9 +37,7 @@ export class GsBuilderToLH<SH extends IGsLogicalHandler> extends GsLogicalEventP
 		}
 		case IGsBuilderState.inProp: {
 			this.pushState();
-			const prop = this.getProp();
-			this.handler.bodyMapProp(prop, false, this.peekNode());
-			const n = this.pushNode(specialType, prop);
+			const n = this.pushNode(specialType, this.getProp());
 			setName(n, name, esc);
 			this.state = IGsBuilderState.inHeadNode;
 			break;
@@ -65,9 +63,7 @@ export class GsBuilderToLH<SH extends IGsLogicalHandler> extends GsLogicalEventP
 			break;
 		}
 		case IGsBuilderState.inProp:
-			this.popState();
-			this.handler.bodyMapProp(this.getProp(), true, this.peekNode());
-			this.state = IGsBuilderState.inMap;
+			this.emptyProp();
 			//!break;
 		case IGsBuilderState.inList:
 		case IGsBuilderState.inMixed:
@@ -109,20 +105,16 @@ export class GsBuilderToLH<SH extends IGsLogicalHandler> extends GsLogicalEventP
 		case IGsBuilderState.inHeadNode: {
 			const n = this.peekNode();
 			n.bodyType = '"';
-			this.handler.startNode(n);
 			setVal(this.txt, value, !esc ? true : esc, formattable);
-			this.handler.bodyText(this.txt, n);
+			this.handler.startNode(n, this.txt);
 			this.state = IGsBuilderState.inTailNode;
 			break;
 		}
 		case IGsBuilderState.inProp: {
-			const prop = this.getProp();
-			this.handler.bodyMapProp(prop, false, this.peekNode());
-			const n = this.pushNode('', prop);
+			const n = this.pushNode('', this.getProp());
 			n.bodyType = '"';
-			this.handler.startNode(n);
 			setVal(this.txt, value, esc, formattable);
-			this.handler.bodyText(this.txt, n);
+			this.handler.startNode(n, this.txt);
 			this.popNode(n);
 			this.state = IGsBuilderState.inMap;
 			break;
@@ -131,9 +123,8 @@ export class GsBuilderToLH<SH extends IGsLogicalHandler> extends GsLogicalEventP
 		case IGsBuilderState.inList: {
 			const n = this.pushNodeAnonymous('', undefined);
 			n.bodyType = '"';
-			this.handler.startNode(n);
 			setVal(this.txt, value, esc, formattable);
-			this.handler.bodyText(this.txt, n);
+			this.handler.startNode(n, this.txt);
 			this.popNode(n);
 			break;
 		}
@@ -141,11 +132,10 @@ export class GsBuilderToLH<SH extends IGsLogicalHandler> extends GsLogicalEventP
 			const mixed = this.peekNode();
 			const n = this.pushNodeAnonymous('', undefined);
 			n.bodyType = '"';
-			this.handler.startNode(n);
 			this.txt.value = value;
 			this.txt.valueEsc = false;
 			this.txt.valueFormattable = mixed.bodyType === "~`";
-			this.handler.bodyText(this.txt, n);
+			this.handler.startNode(n, this.txt);
 			this.popNode(n);
 			break;
 		}
@@ -163,12 +153,7 @@ export class GsBuilderToLH<SH extends IGsLogicalHandler> extends GsLogicalEventP
 		case IGsBuilderState.inList:
 		case IGsBuilderState.inProp: {
 			this.pushState();
-			let prop: IGsName;
-			if (this.state === IGsBuilderState.inProp) {
-				prop = this.getProp();
-				this.handler.bodyMapProp(prop, false, this.peekNode());
-			}
-			this.pushNodeAnonymous(this.state === IGsBuilderState.inMixed ? null : '', prop);
+			this.pushNodeAnonymous(this.state === IGsBuilderState.inMixed ? null : '', this.state === IGsBuilderState.inProp ? this.getProp() : undefined);
 			this.state = IGsBuilderState.inHeadNode;
 			//!break;
 		}
@@ -195,12 +180,7 @@ export class GsBuilderToLH<SH extends IGsLogicalHandler> extends GsLogicalEventP
 		case IGsBuilderState.inList:
 		case IGsBuilderState.inProp: {
 			this.pushState();
-			let prop: IGsName;
-			if (this.state === IGsBuilderState.inProp) {
-				prop = this.getProp();
-				this.handler.bodyMapProp(prop, false, this.peekNode());
-			}
-			const n = this.pushNodeAnonymous(this.state === IGsBuilderState.inMixed ? null : '', prop);
+			const n = this.pushNodeAnonymous(this.state === IGsBuilderState.inMixed ? null : '', this.state === IGsBuilderState.inProp ? this.getProp() : undefined);
 			this.state = IGsBuilderState.inHeadNode;
 			//!break;
 		}
@@ -226,12 +206,7 @@ export class GsBuilderToLH<SH extends IGsLogicalHandler> extends GsLogicalEventP
 		case IGsBuilderState.inList:
 		case IGsBuilderState.inProp: {
 			this.pushState();
-			let prop: IGsName;
-			if (this.state === IGsBuilderState.inProp) {
-				prop = this.getProp();
-				this.handler.bodyMapProp(prop, false, this.peekNode());
-			}
-			const n = this.pushNodeAnonymous(this.state === IGsBuilderState.inMixed ? null : '', prop);
+			const n = this.pushNodeAnonymous(this.state === IGsBuilderState.inMixed ? null : '', this.state === IGsBuilderState.inProp ? this.getProp() : undefined);
 			this.state = IGsBuilderState.inHeadNode;
 			//!break;
 		}
@@ -257,12 +232,7 @@ export class GsBuilderToLH<SH extends IGsLogicalHandler> extends GsLogicalEventP
 		case IGsBuilderState.inList:
 		case IGsBuilderState.inProp: {
 			this.pushState();
-			let prop: IGsName;
-			if (this.state === IGsBuilderState.inProp) {
-				prop = this.getProp();
-				this.handler.bodyMapProp(prop, false, this.peekNode());
-			}
-			const n = this.pushNodeAnonymous(this.state === IGsBuilderState.inMixed ? null : '', prop);
+			const n = this.pushNodeAnonymous(this.state === IGsBuilderState.inMixed ? null : '', this.state === IGsBuilderState.inProp ? this.getProp() : undefined);
 			this.state = IGsBuilderState.inHeadNode;
 			//!break;
 		}
@@ -288,9 +258,7 @@ export class GsBuilderToLH<SH extends IGsLogicalHandler> extends GsLogicalEventP
 		if (this.state === IGsBuilderState.inAtt) this.emptyAtt();
 		switch (this.state) {
 		case IGsBuilderState.inProp:
-			this.popState();
-			this.handler.bodyMapProp(this.getProp(), true, this.peekNode());
-			this.state = IGsBuilderState.inMap;
+			this.emptyProp();
 			//!break;
 		case IGsBuilderState.inList:
 		case IGsBuilderState.inMap:
@@ -315,11 +283,20 @@ export class GsBuilderToLH<SH extends IGsLogicalHandler> extends GsLogicalEventP
 
 	/** Possible input states : inAtt */
 	protected emptyAtt() {
+		this.popState();
 		const a = this.peekNode().lastAtt;
 		a.value = null;
 		a.valueEsc = false;
 		a.valueFormattable = false;
+	}
+
+	/** Possible input states : inProp */
+	protected emptyProp() {
 		this.popState();
+		const node = this.pushNode("", this.getProp());
+		node.bodyType = "";
+		this.handler.startNode(node);
+		this.state = IGsBuilderState.inMap;
 	}
 
 	/** Possible input states : inHeadNode, inTailNode, inList, inMap, inMixed */

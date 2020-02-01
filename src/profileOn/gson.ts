@@ -64,10 +64,9 @@ export class GsFromJson<H extends IGsLogicalHandler> extends GsLogicalEventProdu
 			if (json === null) {
 				node = this.pushNode('', prop);
 				node.bodyType = '"';
-				this.handler.startNode(node);
 				this.txt.value = "null";
 				this.txt.valueEsc = false;
-				this.handler.bodyText(this.txt, node);
+				this.handler.startNode(node, this.txt);
 				this.popNode(node);
 			} else if (Array.isArray(json)) {
 				node = this.pushNode('', prop);
@@ -86,9 +85,12 @@ export class GsFromJson<H extends IGsLogicalHandler> extends GsLogicalEventProdu
 					p.name = key;
 					p.nameEsc = !rawChars.test(key);
 					if (v === null) {
-						this.handler.bodyMapProp(p, true, node);
+						//prop without value
+						const nullNode = this.pushNode('', p);
+						nullNode.bodyType = '';
+						this.handler.startNode(nullNode);
+						this.popNode(nullNode);
 					} else {
-						this.handler.bodyMapProp(p, false, node);
 						this.push(v, p);
 					}
 				}
@@ -98,10 +100,9 @@ export class GsFromJson<H extends IGsLogicalHandler> extends GsLogicalEventProdu
 		case "string":
 			node = this.pushNode('', prop);
 			node.bodyType = '"';
-			this.handler.startNode(node);
 			this.txt.value = json as string;
 			this.txt.valueEsc = true;
-			this.handler.bodyText(this.txt, node);
+			this.handler.startNode(node, this.txt);
 			this.popNode(node);
 			break;
 		case "number":
@@ -109,10 +110,9 @@ export class GsFromJson<H extends IGsLogicalHandler> extends GsLogicalEventProdu
 		case "boolean":
 			node = this.pushNode('', prop);
 			node.bodyType = '"';
-			this.handler.startNode(node);
 			this.txt.value = json.toString();
 			this.txt.valueEsc = false;
-			this.handler.bodyText(this.txt, node);
+			this.handler.startNode(node, this.txt);
 			this.popNode(node);
 			break;
 		}
@@ -135,7 +135,7 @@ export class GsToJsonLH implements IGsLogicalHandler {
 		return this;
 	}
 
-	startNode(node: IGsEventNode): void {
+	startNode(node: IGsEventNode, bodyText?: IGsEventText): void {
 		let v: json;
 		if (!node.nodeType) {
 			//build the json
@@ -151,23 +151,20 @@ export class GsToJsonLH implements IGsLogicalHandler {
 			case "~`":
 				v = [];
 				break;
-			default: //text or empty body node
+			case '"':
+				this.attach(this.toJsonVal(bodyText), node);
 				return;
+			case'':
+				this.attach(null, node);
+				return;
+			default: //text or empty body node
+				throw Error("node.bodyType unknonwn:" + node.bodyType)
 			}
 		}
 		//attach it
 		if (v !== undefined) this.attach(v, node);
 		this.ancestors.push(v);
 		this.result = v;
-	}
-
-	bodyMapProp(name: IGsName, isNull: boolean, holder: IGsEventNode): void {
-		if (!this.result) return; //node in specialType context
-		if (isNull) (this.result as any)[name.name] = null;
-	}
-
-	bodyText(text: IGsEventText, holder: IGsEventNode): void {
-		this.attach(this.toJsonVal(text), holder);
 	}
 
 	endNode(node: IGsEventNode): void {
@@ -182,7 +179,7 @@ export class GsToJsonLH implements IGsLogicalHandler {
 			if (this.result === undefined) {
 				this.result = v;
 			} else {
-				//it's a second objet at root, auto-wrap in an array
+				//it's a second object at root, auto-wrap in an array
 				this.result = [this.result, v];
 				this.ancestors.push(this.result);
 			}

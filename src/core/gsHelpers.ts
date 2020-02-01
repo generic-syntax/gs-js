@@ -1,4 +1,4 @@
-import {IGsEventNode, IGsEventText, IGsLogicalHandler, IGsName} from "../../api/gs.js";
+import {IGsEventNode, IGsEventText, IGsLogicalHandler} from "../../api/gs.js";
 import {IGsWriter} from "../../api/gsSerializer.js";
 
 /**
@@ -12,16 +12,8 @@ export class GsMultiLH implements IGsLogicalHandler {
 		this.targets = targets;
 	}
 
-	startNode(node: IGsEventNode): void {
-		for (let t of this.targets) t.startNode(node);
-	}
-
-	bodyMapProp(name: IGsName, isNull: boolean, holder: IGsEventNode): void {
-		for (let t of this.targets) t.bodyMapProp(name, isNull, holder);
-	}
-
-	bodyText(text: IGsEventText, holder: IGsEventNode): void {
-		for (let t of this.targets) t.bodyText(text, holder);
+	startNode(node: IGsEventNode, bodyText?: IGsEventText): void {
+		for (let t of this.targets) t.startNode(node, bodyText);
 	}
 
 	endNode(node: IGsEventNode): void {

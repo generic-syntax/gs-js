@@ -1,4 +1,4 @@
-import {gsNodeType, gsSpecialType, IGsEventText, IGsLogicalHandler, IGsName} from "../../api/gs.js";
+import {gsNodeType, gsSpecialType, IGsLogicalHandler, IGsName} from "../../api/gs.js";
 import {IGsParser, IGsReader} from "../../api/gsParser.js";
 import {GsEventNode, GsLogicalEventProducer} from "./gsLogicalHandler.js";
 
@@ -52,11 +52,10 @@ export class GsParser<H extends IGsLogicalHandler> extends GsLogicalEventProduce
 			n = this.pushNode('', prop);
 			n.bodyType = '"';
 			n.name = null;
-			this.handler.startNode(n);
 			this.txt.value = this.in.readRawChars();
 			this.txt.valueEsc = false;
 			this.txt.valueFormattable = false;
-			this.handler.bodyText(this.txt as IGsEventText, n);
+			this.handler.startNode(n, this.txt);
 			this.popNode(n);
 			return;
 		}
@@ -78,23 +77,21 @@ export class GsParser<H extends IGsLogicalHandler> extends GsLogicalEventProduce
 			n = this.pushNode('', prop);
 			n.bodyType = '"';
 			n.name = null;
-			this.handler.startNode(n);
 			this.txt.value = this.in.readQuotedChars('"');
 			this.txt.valueEsc = true;
 			this.txt.valueFormattable = formattable;
-			this.handler.bodyText(this.txt as IGsEventText, n);
+			this.handler.startNode(n, this.txt);
 			this.popNode(n);
 			return;
 		case BOUND_BODYTEXT:
 			n = this.pushNode('', prop);
 			n.bodyType = '"';
 			n.name = null;
-			this.handler.startNode(n);
 			const str = this.in.readBoundedChars('"');
 			this.txt.value = str.str;
 			this.txt.valueEsc = str.esc;
 			this.txt.valueFormattable = formattable;
-			this.handler.bodyText(this.txt as IGsEventText, n);
+			this.handler.startNode(n, this.txt);
 			this.popNode(n);
 			return;
 		default:
@@ -169,22 +166,20 @@ export class GsParser<H extends IGsLogicalHandler> extends GsLogicalEventProduce
 			return;
 		case BODYTEXT:
 			n.bodyType = '"';
-			this.handler.startNode(n);
 			this.txt.value = this.in.readQuotedChars('"');
 			this.txt.valueEsc = true;
 			this.txt.valueFormattable = formattable;
-			this.handler.bodyText(this.txt as IGsEventText, n);
+			this.handler.startNode(n, this.txt);
 			if (this.fillAtts(this.in.readCodeNoSpace(), n, true) === NODE_END) this.popNode(n);
 			else this.in.error(this.in.ended ? "Node not ended" : "Invalid character in tail node");
 			return;
 		case BOUND_BODYTEXT:
 			n.bodyType = '"';
-			this.handler.startNode(n);
 			const str = this.in.readBoundedChars('"');
 			this.txt.value = str.str;
 			this.txt.valueEsc = str.esc;
 			this.txt.valueFormattable = formattable;
-			this.handler.bodyText(this.txt as IGsEventText, n);
+			this.handler.startNode(n, this.txt);
 			if (this.fillAtts(this.in.readCodeNoSpace(), n, true) === NODE_END) this.popNode(n);
 			else this.in.error(this.in.ended ? "Node not ended" : "Invalid character in tail node");
 			return;
@@ -215,10 +210,14 @@ export class GsParser<H extends IGsLogicalHandler> extends GsLogicalEventProduce
 				if (this.fillName(c, prop)) {
 					c = this.in.readCodeNoSpace();
 					if (c === PROP_EQ) {
-						this.handler.bodyMapProp(prop, false, this.peekNode());
 						this.parseNodeLike(this.in.readCodeNoSpace(), prop);
 					} else {
-						this.handler.bodyMapProp(prop, true, this.peekNode());
+						//prop without value => push a simple empty node.
+						const n = this.pushNode('', prop);
+						n.bodyType = '';
+						n.name = null;
+						this.handler.startNode(n);
+						this.popNode(n);
 						continue;
 					}
 				} else {
@@ -243,11 +242,10 @@ export class GsParser<H extends IGsLogicalHandler> extends GsLogicalEventProduce
 				let n = this.pushNode('', undefined);
 				n.bodyType = '"';
 				n.name = null;
-				this.handler.startNode(n);
 				txt.value = this.in.readMixedText();
 				txt.valueEsc = true;
 				txt.valueFormattable = txtFormattable;
-				this.handler.bodyText(txt as IGsEventText, n);
+				this.handler.startNode(n, txt);
 				this.popNode(n);
 			}
 		}

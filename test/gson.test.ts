@@ -27,6 +27,10 @@ describe("gson", function () {
 		toGs({a: 12, "my prop": "p", sub: {}}, `{a=12'my prop'="p"sub={}}`);
 	});
 
+	it("nullProp", function () {
+		toGs({a: null}, `{a}`);
+	});
+
 	it("deep", function () {
 		toGs({s1: {s11: {}}, s2: {}, s3: {s31: {}}}, '{s1={s11={}}s2={}s3={s31={}}}');
 		toGs({s1: {s11: {}, s12: {}}}, '{s1={s11={}s12={}}}');
