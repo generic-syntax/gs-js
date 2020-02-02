@@ -300,9 +300,9 @@
 		<code>!"</code> is the simplest boundary, if this character sequence is present in the content, any character (except <code>"</code>)
 		can be inserted in the middle: <code>!!"</code>, <code>!."</code>, <code>!°"</code>, <code>!xyz"</code>, <code>!☠"</code>...</p>
 
-	<p>The GS bounded escaping can also be useful where HTML does not offers good solutions, like in a textarea:</p>
+	<p>The GS bounded escaping can also be useful where HTML does not offers good solutions, like in the <code>pre</code> tag:</p>
 	<ml-gsml-compare format="gsml" output="html">
-<pre>&lt;textarea !"
+<pre>&lt;pre !"
   &lt;svg:svg xmlns:svg="http://www.w3.org/2000/svg" version="1.1" viewBox="0 0 32 32">
     &lt;svg:g>
       &lt;svg:circle cx="2" cy="4" r="2"/>

@@ -10,7 +10,7 @@ import {cleanupDom} from "./ml-gsml-compare.js";
 import {getStyle, registerStyle} from "./styles.js";
 
 
-export type EOther2GsFormat = "json" | "html" | "xhtml" | "xml";
+export type EOther2GsFormat = "json" | "html" | "xml";
 
 export interface IOther2GsInit {
 	format?: EOther2GsFormat
@@ -41,7 +41,6 @@ export class Other2gs extends HTMLElement {
 				<div>Edit or paste your:</div>
 				<label><input type="radio" name="format" value="json"/>JSON</label>
 				<label><input type="radio" name="format" value="html"/>HTML</label>
-				<label><input type="radio" name="format" value="xhtml"/>XHTML</label>
 				<label><input type="radio" name="format" value="xml"/>XML</label>
 			</form>;
 
@@ -80,7 +79,6 @@ export class Other2gs extends HTMLElement {
 		switch (f) {
 		case "json":
 		case "html":
-		case "xhtml":
 		case "xml":
 			return f;
 		}
@@ -93,7 +91,6 @@ export class Other2gs extends HTMLElement {
 			return "javascript";
 		case "html":
 			return "htmlmixed";
-		case "xhtml":
 		case "xml":
 			return "xml";
 		}
@@ -170,7 +167,6 @@ export class Other2gs extends HTMLElement {
 			this.minifiedCompare.initialize({first: minHTml, second: minGs});
 			break;
 		}
-		case "xhtml":
 		case "xml": {
 			const doc = new DOMParser().parseFromString(this.codemirror.editor.getValue(), "text/xml");
 			if (doc.querySelector("parsererror")) {
@@ -215,10 +211,9 @@ registerStyle('other-2-gs', /* language=CSS */ `
 		max-width: 50%;
 	}
 
-	/*#main {*/
-	/*	max-height: 80vh;*/
-	/*	overflow: auto;*/
-	/*}*/
+	#main {
+		min-height: 4em;
+	}
 
 	.right {
 		border-left: 1px solid var(--border-color);
