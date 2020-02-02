@@ -53,20 +53,11 @@ export class MlGsmlCompare extends HTMLElement {
 						mode: output === "html" ? 'htmlmixed' : 'xml',
 						value: mlBlock,
 						readOnly: 'nocursor',
-						tabSize: 2,
-						scrollbarStyle: null
+						tabSize: 2
 					} as ICodeMirrorInit}/>
 					<gs-viewer class="right" î={(init.inputFormat === "gsml" ? {gs: gsmlBlock} : init.inputFormat === "xml" ? {domXml: dom} : {domHtml: dom}) as IGsViewerInit}/>
 				</div>,
-				<minified-compare î={{first: mlInline, second: gsmlInline} as IMinifiedCompareInit}>
-					<code-mirror î={{
-						mode: output === "html" ? 'htmlmixed' : 'xml',
-						value: mlInline,
-						readOnly: 'nocursor',
-						scrollbarStyle: "native"
-					} as ICodeMirrorInit}/>
-					<gs-viewer î={{gs: gsmlInline, inline: true} as IGsViewerInit}/>
-				</minified-compare>
+				<minified-compare î={{first: mlInline, second: gsmlInline} as IMinifiedCompareInit}/>
 			);
 		}
 	}
@@ -240,16 +231,15 @@ function parse(format: 'xml' | 'html' | 'htmlDoc', val: string): Node {
 	}
 }
 
-function cleanupDom<T extends Node>(node: T, cleanupWhitespaces: boolean, cleanupComments: boolean, cleanupPI: boolean): T {
-	return node;
+export function cleanupDom<T extends Node>(node: T, cleanupWhitespaces: boolean, cleanupComments: boolean, cleanupPI: boolean): T {
 	let filter = (cleanupWhitespaces ? NodeFilter.SHOW_TEXT : 0) | (cleanupComments ? NodeFilter.SHOW_COMMENT : 0) | (cleanupPI ? NodeFilter.SHOW_PROCESSING_INSTRUCTION : 0);
-	let tw = (node.ownerDocument || node as any).createNodeIterator(node, filter);
+	let tw = (node.ownerDocument || node as any as Document).createNodeIterator(node, filter);
 	let previous = tw.nextNode();
 	let next;
 	while (previous) {
 		next = tw.nextNode();
 		if (previous.nodeType !== Node.TEXT_NODE) {
-			previous.parentNode.removeChild(previous);
+			previous.parentNode.removeChild(previous); //comment or PI
 		} else if (whiteSpaces.test(previous.nodeValue)) {
 			let p = previous.parentElement;
 			let space;

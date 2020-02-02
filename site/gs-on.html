@@ -165,15 +165,15 @@ members=[
 	<p>In GS all is node and a node has this form:</p>
 
 	<pre>
-'<' specialType? name? attribute* (body attribute*)?'>'
+'<' specialType? name? attribute* body? attribute* '>'
 </pre>
-
-	<p>The <code>body</code> part can be a list <code>[]</code>, a map <code>{}</code>, or a text <code>""</code> (or without
-		quotes and limited character set used in GS-ON profile for null, boolean and number values).</p>
 
 	<p>Each node part is optional. When the node has no <code>specialType</code> (such as comments <code>#</code>), no <code>name</code>,
 		and no <code>attributes</code> but just a <code>body</code>, the <code>'<'</code> and <code>'>'</code> marks can be ommited and you
 		get the GS-ON profile.</p>
+
+	<p>The <code>body</code> part can be a list <code>[]</code>, a map <code>{}</code>, or a text <code>""</code> (or without
+		quotes and limited character set used in GS-ON profile for null, boolean and number values).</p>
 
 	<p>Discover the <a href="gsDefinition.html">full syntax</a>.</p>
 

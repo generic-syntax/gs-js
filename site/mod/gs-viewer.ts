@@ -16,22 +16,25 @@ export interface IGsViewerInit {
 
 export class GsViewer extends HTMLElement {
 
-	async initialize(init: IGsViewerInit) {
-		if (!this.shadowRoot) {
-			const sr = this.attachShadow({mode: 'open'});
+	initialize(init: IGsViewerInit) {
+		let sr = this.shadowRoot;
+		if (!sr) {
+			sr = this.attachShadow({mode: 'open'});
 			sr.appendChild(getStyle(this.localName));
-			const lh = buildHtmlViewer(sr, init.serialize);
-			if (init.gs) {
-				new GsParser(lh).parse(init.gs);
-			} else if (init.jso) {
-				new GsFromJson(lh).build(init.jso);
-			} else if (init.domHtml) {
-				new GsFromDomHtml(lh).build(init.domHtml);
-			} else if (init.domXml) {
-				new GsFromDomXml(lh).build(init.domXml);
-			} else if (init.domXmlNs) {
-				new GsFromDomXmlNs(lh).build(init.domXmlNs);
-			}
+		} else {
+			while (sr.lastChild?.nodeName !== "STYLE") sr.lastChild.remove();
+		}
+		const lh = buildHtmlViewer(sr, init.serialize);
+		if (init.gs) {
+			new GsParser(lh).parse(init.gs);
+		} else if (init.jso) {
+			new GsFromJson(lh).build(init.jso);
+		} else if (init.domHtml) {
+			new GsFromDomHtml(lh).build(init.domHtml);
+		} else if (init.domXml) {
+			new GsFromDomXml(lh).build(init.domXml);
+		} else if (init.domXmlNs) {
+			new GsFromDomXmlNs(lh).build(init.domXmlNs);
 		}
 	}
 
@@ -43,16 +46,16 @@ export class GsViewer extends HTMLElement {
 			};
 			switch (this.getAttribute("format") || "gs") {
 			case "gs":
-				this.initialize({gs: this.firstElementChild.textContent, serialize});
+				this.initialize({gs: this.firstElementChild?.textContent, serialize});
 				break;
 			case "json":
-				this.initialize({jso: JSON.parse(this.firstElementChild.textContent), serialize});
+				this.initialize({jso: JSON.parse(this.firstElementChild?.textContent), serialize});
 				break;
 			case "html":
 				this.initialize({domHtml: this.firstElementChild, serialize});
 				break;
 			case "xml":
-				this.initialize({domXml: new DOMParser().parseFromString(this.firstElementChild.textContent, "text/xml"), serialize});
+				this.initialize({domXml: new DOMParser().parseFromString(this.firstElementChild?.textContent, "text/xml"), serialize});
 				break;
 			}
 		}
@@ -61,6 +64,7 @@ export class GsViewer extends HTMLElement {
 
 registerStyle('gs-viewer', /* language=CSS */ `
 	:host {
+		flex: 1;
 		display: block;
 		font-family: monospace;
 		white-space: pre;

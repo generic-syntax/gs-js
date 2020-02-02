@@ -6,7 +6,7 @@ export class GsParser<H extends IGsLogicalHandler> extends GsLogicalEventProduce
 
 	protected in?: IGsReader;
 
-	parse(gs: string): this {
+	parse(gs: string | IGsReader): this {
 		this.in = typeof gs === 'string' ? new GsStringReader(gs) : gs;
 		try {
 			for (let c = this.in.readCodeNoSpace(); !Number.isNaN(c); c = this.in.readCodeNoSpace()) this.parseNodeLike(c);

@@ -1,15 +1,11 @@
+import cm from "codemirror";
 import {getStyle, registerStyle} from "./styles.js";
 
-export interface ICodeMirrorInit {
-	value: string
-	mode: string
-	lineNumbers?: boolean
-	readOnly?: boolean | 'nocursor'
-	scrollbarStyle?: null | 'native'
-	tabSize?: number
+
+export interface ICodeMirrorInit extends cm.EditorConfiguration {
 }
 
-declare var CodeMirror: (node: Node, options: ICodeMirrorInit) => any;
+declare var CodeMirror: (node: Node, options: cm.EditorConfiguration) => any;
 
 
 export class CodeMirrorElt extends HTMLElement {
@@ -17,6 +13,8 @@ export class CodeMirrorElt extends HTMLElement {
 	init: ICodeMirrorInit;
 
 	inited: Promise<void>;
+
+	editor: cm.Editor;
 
 	initialize(init: ICodeMirrorInit) {
 		if (!this.inited) this.inited = this.initCm();
@@ -37,11 +35,10 @@ export class CodeMirrorElt extends HTMLElement {
 
 	async connectedCallback() {
 		if (!this.inited) {
-			this.initialize({
-				value: this.firstElementChild.textContent,
+			if (this.hasAttribute("mode")) this.initialize({
+				value: this.firstElementChild?.textContent,
 				mode: this.getAttribute("mode"),
 				readOnly: 'nocursor',
-				scrollbarStyle: null,
 				tabSize: 2
 			});
 		} else {
@@ -53,9 +50,11 @@ export class CodeMirrorElt extends HTMLElement {
 		await this.inited;
 		await importCmMode(this.init.mode);
 		while (this.shadowRoot.lastElementChild.localName !== "style") this.shadowRoot.lastElementChild.remove();
-		CodeMirror(this.shadowRoot, this.init);
+		this.editor = CodeMirror(this.shadowRoot, this.init);
+		this.dispatchEvent(new CustomEvent("CmEditorInited"));
 	}
 }
+
 
 let cmLib: Promise<void> = null;
 
@@ -105,7 +104,12 @@ function importCmMode(mode: string): Promise<any> {
 }
 
 registerStyle('code-mirror', /* language=CSS */ `
+	:host {
+		display: block;
+	}
+
 	.CodeMirror {
+		flex: 1;
 		height: auto;
 		background-color: inherit !important;
 	}

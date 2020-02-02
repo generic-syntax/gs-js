@@ -48,20 +48,11 @@ export class JsonGsonCompare extends HTMLElement {
 						mode: 'javascript',
 						value: jsonBlock,
 						readOnly: 'nocursor',
-						tabSize: 2,
-						scrollbarStyle: null
+						tabSize: 2
 					} as ICodeMirrorInit}/>
 					<gs-viewer class="right" î={(init.json ? {jso: j} : {gs: gsonBlock}) as IGsViewerInit}/>
 				</div>,
-				<minified-compare î={{first: jsonInline, second: gsonInline} as IMinifiedCompareInit}>
-					<code-mirror î={{
-						mode: 'javascript',
-						value: jsonInline,
-						readOnly: 'nocursor',
-						scrollbarStyle: "native"
-					} as ICodeMirrorInit}/>
-					<gs-viewer î={{jso: j, inline: true} as IGsViewerInit}/>
-				</minified-compare>
+				<minified-compare î={{first: jsonInline, second: gsonInline} as IMinifiedCompareInit}/>
 			);
 		}
 	}

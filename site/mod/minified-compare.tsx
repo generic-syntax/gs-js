@@ -2,26 +2,33 @@ import {JSX} from "./jsx.js";
 import {getStyle, registerStyle} from "./styles.js";
 
 export interface IMinifiedCompareInit {
-	first: string
-	second: string
+	first?: string
+	second?: string
 }
 
 export class MinifiedCompare extends HTMLElement {
 
 	initialize(init: IMinifiedCompareInit) {
-		if (!this.shadowRoot) {
-			let unit = "bytes";
-			let v1 = init.first.length;
-			let v2 = init.second.length;
-			//todo ? if (init.firstSize > 9999) {}
+		let sr = this.shadowRoot;
+		if (!sr) {
+			sr = this.attachShadow({mode: 'open'});
+			sr.appendChild(getStyle(this.localName));
+		} else {
+			while (sr.lastChild?.nodeName !== "STYLE") sr.lastChild.remove();
+		}
 
-			const sr = this.attachShadow({mode: 'open'});
+		if (init.first && init.second) {
+			let unit = "bytes";
+			const v1 = init.first.length;
+			const v2 = init.second.length;
+			//todo units ? if (init.firstSize > 9999) {}
+			const p1 = Math.round((v1 - v2) / v2 * 100);
+			const p2 = Math.round((v2 - v1) / v1 * 100);
 			sr.append(
-				getStyle(this.localName),
 				<div id="bar">
-					<div class="side" title="Character length comparison of the two unindented forms">{v1} {unit} <span class="bigger">( +{Math.round((v1 - v2) / v2 * 100)}%)</span></div>
+					<div class="side" title="Character length comparison of the two unindented forms">{v1} {unit} <span class={v1 > v2 ? 'bigger' : 'smaller'}>( {p1 > 0 ? '+' : ''}{p1 || '0'}%)</span></div>
 					<button id="detailsBtn" title="Show unindented contents" onclick={() => this.toggleShowDetails()}><span id="detailsLabel"/></button>
-					<div class="side" title="Character length comparison of the two unindented forms">{v2} {unit} <span class="smaller">( {Math.round((v2 - v1) / v1 * 100)}%)</span></div>
+					<div class="side" title="Character length comparison of the two unindented forms">{v2} {unit} <span class={v2 > v1 ? 'bigger' : 'smaller'}>( {p2 > 0 ? '+' : ''}{p2 || '0'}%)</span></div>
 				</div>,
 				<div id="details">
 					<pre>{init.first}</pre>
@@ -32,10 +39,12 @@ export class MinifiedCompare extends HTMLElement {
 	}
 
 	connectedCallback() {
-		if (!this.shadowRoot) this.initialize({
-			first: this.getAttribute("first"),
-			second: this.getAttribute("second"),
-		});
+		if (!this.shadowRoot && this.hasAttribute("first")) {
+			this.initialize({
+				first: this.getAttribute("first"),
+				second: this.getAttribute("second"),
+			});
+		}
 	}
 
 	toggleShowDetails() {
@@ -69,6 +78,15 @@ registerStyle('minified-compare', /* language=CSS */ `
 	#details {
 		display: none;
 		overflow: auto;
+	}
+
+	pre:first-child {
+		border-bottom: 1px solid var(--border-color);
+	}
+
+	pre {
+		padding: .3em 0;
+		margin: 0;
 	}
 
 	:host(.showDetails) #details {

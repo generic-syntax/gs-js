@@ -1,7 +1,6 @@
 window.addEventListener("load", async () => {
 	await mods;
 	const JSX = (window as any).JSX;
-	const main = document.body.querySelector("main");
 
 	//Header
 	const fileName = location.pathname.substr(location.pathname.lastIndexOf('/') + 1);
@@ -11,8 +10,9 @@ window.addEventListener("load", async () => {
 			<a href="gs-on.html">GS for JSON</a>
 			<a href="gs-ml.html">GS for XML and HTML</a>
 			<a href="gs-gr.html">GS for graph</a>
-			<a href="gsDefinition.html">GS definition</a>
-			<a href="gsApi.html">GS API</a>
+			<a href="gsDefinition.html">Definition</a>
+			<a href="gsTools.html">Try-it</a>
+			<a href="gsApi.html">API</a>
 		</nav>
 	</header> as HTMLElement;
 
@@ -23,10 +23,10 @@ window.addEventListener("load", async () => {
 		}
 	}
 
-	main.insertAdjacentElement('beforebegin', header);
+	document.querySelector("h1").insertAdjacentElement('afterend', header);
 
 	//Footer
-	main.insertAdjacentElement('afterend', <footer>
+	document.body.appendChild(<footer>
 		<div id="legal">
 			<div>©2020 generic-syntax.org and contributors</div>
 			<div><a href="mailto:contact@generic-syntax.org">contact@generic-syntax.org</a></div>

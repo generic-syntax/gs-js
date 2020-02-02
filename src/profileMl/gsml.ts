@@ -62,15 +62,20 @@ export interface IGsmlStringifyOptions {
  */
 export class GsFromDomXml<H extends IGsLogicalHandler> extends GsLogicalEventProducer<H> {
 
-	textBody(node: Element) {return false}
+	/**
+	 * @return By default, return true if the node contain only one text node.
+	 */
+	textBody(node: Element): boolean {
+		return node.firstChild?.nodeType === Node.TEXT_NODE && !node.firstChild.nextSibling;
+	}
 
 	setTextBody(v: string[] | ((node: Element) => boolean)): this {
 		if (Array.isArray(v)) this.textBody = (node: Element) => v.indexOf(node.nodeName) >= 0;
-		else this.mixedBody = v || isFalse;
+		else this.textBody = v || isFalse;
 		return this;
 	}
 
-	mixedBody(node: Element) {return false}
+	mixedBody(node: Element): boolean {return false}
 
 	setMixedBody(v: string[] | ((node: Element) => boolean)): this {
 		if (Array.isArray(v)) this.mixedBody = (node: Element) => v.indexOf(node.nodeName) >= 0;
@@ -78,7 +83,7 @@ export class GsFromDomXml<H extends IGsLogicalHandler> extends GsLogicalEventPro
 		return this;
 	}
 
-	formattableBody(node: Node) {return false}
+	formattableBody(node: Node): boolean {return false}
 
 	setFormattableBody(v: string[] | ((node: Node) => boolean)): this {
 		if (Array.isArray(v)) this.formattableBody = (node: Node) => v.indexOf(node.nodeName) >= 0;
@@ -86,7 +91,7 @@ export class GsFromDomXml<H extends IGsLogicalHandler> extends GsLogicalEventPro
 		return this;
 	}
 
-	formattableValue(node: Node, att: Attr) {return false}
+	formattableValue(node: Node, att: Attr): boolean {return false}
 
 	setFormattableValue(v: string[] | ((node: Node, att: Attr) => boolean)): this {
 		if (Array.isArray(v)) this.formattableValue = (node: Node, att: Attr) => v.indexOf(att.name) >= 0;
