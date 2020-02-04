@@ -136,19 +136,13 @@ console.log(GSON.stringify(obj, {serialize:{
   method: 'pretty'
 }
 }));
-console.log(GSON.stringify(obj, {serialize:{
-  method: 'indented',
-  unformat: true,
-  indent: '\t'
-}
-}));
 
 const domFragment = GSML.parse('xml', `&lt;node att=value>`);
 console.log(GSML.stringify('xml', domFragment)); //minified
 console.log(GSML.stringify('xml', domFragment, {serialize:{
-  method: 'formatted',
-  indent: '  ',
-  lineWidth: 128
+  method: 'indented',
+  unformat: true,
+  indent: '\t'
 }
 }));</pre>
 			</code-mirror>

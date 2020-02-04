@@ -1,20 +1,20 @@
-import {gsEscaping, gsIndent, gsSpecialType, IGsEventNode, IGsEventText, IGsLogicalHandler, IGsName, IGsSerializeOptions, IGsSyntaxHandler, IGsValue, rawChars} from "../../api/gs.js";
+import {gsEscaping, gsIndent, gsSpecialType, IGsEventNode, IGsEventText, IGsLogicalHandler, IGsName, IGsSerializeOptions, IGsStreamHandler, IGsValue, rawChars} from "../../api/gs.js";
 import {IGsWriter} from "../../api/gsSerializer.js";
 import {GsLogicalEventProducer} from "./gsLogicalHandler.js";
-import {GsChainedSH, GsLH2SH} from "./gsSyntaxHandler.js";
+import {GsChainedSH, GsLH2SH} from "./gsStreamHandler.js";
 
 
 /**
  * IGsLogicalHandler for minified serialized output.
  */
-export class GsMinifiedLH<SH extends IGsSyntaxHandler> extends GsLH2SH<SH> {
+export class GsMinifiedLH<SH extends IGsStreamHandler> extends GsLH2SH<SH> {
 }
 
 /**
  * IGsLogicalHandler for pretty serialized output.
  * For human pretty reading, white-spaces are inserted between attributes and before value properties in body map.
  */
-export class GsPrettyLH<SH extends IGsSyntaxHandler> extends GsLH2SH<SH> {
+export class GsPrettyLH<SH extends IGsStreamHandler> extends GsLH2SH<SH> {
 	startNode(node: IGsEventNode, bodyText?: IGsEventText): void {
 		if (node.holderProp) {
 			const isNull = node.nodeType === '' && node.bodyType === '';
@@ -76,7 +76,7 @@ export interface IGsIndent {
  * @see GsUnformatLH
  * @see GsFormatLH
  */
-export class GsIndentLH<SH extends IGsSyntaxHandler> extends GsPrettyLH<SH> {
+export class GsIndentLH<SH extends IGsStreamHandler> extends GsPrettyLH<SH> {
 
 	readonly indent: string;
 	protected spaces: string[];
@@ -138,7 +138,7 @@ export interface IGsFormat extends IGsIndent {
 /**
  * Reformat formattable attributes values and text body with max line width.
  */
-export class GsFormatLH<SH extends IGsSyntaxHandler> extends GsIndentLH<SH> {
+export class GsFormatLH<SH extends IGsStreamHandler> extends GsIndentLH<SH> {
 	readonly lineWidth: number;
 
 	constructor(options: IGsFormat, handler?: SH) {
@@ -195,7 +195,7 @@ export class GsUnformatLH<LH extends IGsLogicalHandler> extends GsLogicalEventPr
 	}
 }
 
-export class GsUnformatSH<SH extends IGsSyntaxHandler> extends GsChainedSH<SH> implements IGsSyntaxHandler {
+export class GsUnformatSH<SH extends IGsStreamHandler> extends GsChainedSH<SH> implements IGsStreamHandler {
 
 	protected txt: IGsValue = {
 		value: "",
@@ -228,7 +228,7 @@ export class GsUnformatSH<SH extends IGsSyntaxHandler> extends GsChainedSH<SH> i
 /**
  * Final serializer to a IGsWriter.
  */
-export class GsSerializer<OUT extends IGsWriter> extends GsLH2SH<GsSerializer<OUT>> implements IGsSyntaxHandler {
+export class GsSerializer<OUT extends IGsWriter> extends GsLH2SH<GsSerializer<OUT>> implements IGsStreamHandler {
 
 	constructor(readonly out?: OUT) {
 		super(null);

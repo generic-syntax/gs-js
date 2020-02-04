@@ -2,6 +2,9 @@ window.addEventListener("load", async () => {
 	await mods;
 	const JSX = (window as any).JSX;
 
+	const h1 = document.querySelector("h1");
+	h1.insertAdjacentElement("beforebegin", <a id="logoLnk" href="index.html" title="Generic-Syntax"><img id="logo" src="res/gs.svg"/></a>);
+
 	//Header
 	const fileName = location.pathname.substr(location.pathname.lastIndexOf('/') + 1);
 	const header = <header>
@@ -11,7 +14,7 @@ window.addEventListener("load", async () => {
 			<a href="gs-ml.html">GS for XML and HTML</a>
 			<a href="gs-gr.html">GS for graph</a>
 			<a href="gsDefinition.html">Definition</a>
-			<a href="gsTools.html">Try-it</a>
+			<a href="gsTry.html">Try-it</a>
 			<a href="gsApi.html">API</a>
 		</nav>
 	</header> as HTMLElement;
@@ -23,7 +26,7 @@ window.addEventListener("load", async () => {
 		}
 	}
 
-	document.querySelector("h1").insertAdjacentElement('afterend', header);
+	h1.insertAdjacentElement('afterend', header);
 
 	//Footer
 	document.body.appendChild(<footer>

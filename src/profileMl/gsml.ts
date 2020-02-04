@@ -63,10 +63,10 @@ export interface IGsmlStringifyOptions {
 export class GsFromDomXml<H extends IGsLogicalHandler> extends GsLogicalEventProducer<H> {
 
 	/**
-	 * Called only if node contains only one or more text nodes.
+	 * Called only if the element contains only one or more text nodes.
 	 * @return return true by default.
 	 */
-	textBody(node: Element): boolean {return true}
+	textBody(elt: Element): boolean {return true}
 
 	setTextBody(v: string[] | ((node: Element) => boolean)): this {
 		if (Array.isArray(v)) this.textBody = (node: Element) => v.indexOf(node.nodeName) >= 0;
@@ -228,7 +228,16 @@ export class GsFromDomXml<H extends IGsLogicalHandler> extends GsLogicalEventPro
 
 export class GsFromDomHtml<H extends IGsLogicalHandler> extends GsFromDomXml<H> {
 
+	static TEXT_TAGS = new Set(["SCRIPT", "STYLE", "TEXTAREA", "TITLE"]);
 	static MIXED_TAGS = new Set(["P", "LI", "SPAN", "EM", "STRONG", "CODE", "SAMP", "VAR", "A", "B"]);
+
+	/**
+	 * By default, set text body for script, style, textarea, and title tag.
+	 * For other elements containing a text node, the more generic mixed bodyType is prefered.
+	 */
+	textBody(elt: Element): boolean {
+		return GsFromDomHtml.TEXT_TAGS.has(elt.nodeName);
+	}
 
 	/** By default, use mixed instead of list body if known para / inline tag or if children contains at least one no whitespace TextNode. */
 	mixedBody(node: Element) {

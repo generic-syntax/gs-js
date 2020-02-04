@@ -1,7 +1,7 @@
-import {gsSpecialType, IGsEventNode, IGsEventText, IGsLogicalHandler, IGsName, IGsSyntaxHandler, IGsValue} from "../../api/gs.js";
+import {gsSpecialType, IGsEventNode, IGsEventText, IGsLogicalHandler, IGsName, IGsStreamHandler, IGsValue} from "../../api/gs.js";
 
-/** Base class for transform IGsLogicalHandler events to IGsSyntaxHandler. */
-export abstract class GsLH2SH<SH extends IGsSyntaxHandler> implements IGsLogicalHandler {
+/** Base class for transform IGsLogicalHandler events to IGsStreamHandler. */
+export abstract class GsLH2SH<SH extends IGsStreamHandler> implements IGsLogicalHandler {
 
 	constructor(public handler: SH) {}
 
@@ -45,8 +45,8 @@ export abstract class GsLH2SH<SH extends IGsSyntaxHandler> implements IGsLogical
 	}
 }
 
-/** Base class for chaining IGsSyntaxHandler. */
-export abstract class GsChainedSH<SH extends IGsSyntaxHandler> implements IGsSyntaxHandler {
+/** Base class for chaining IGsStreamHandler. */
+export abstract class GsChainedSH<SH extends IGsStreamHandler> implements IGsStreamHandler {
 
 	constructor(public handler: SH) {}
 

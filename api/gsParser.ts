@@ -1,7 +1,7 @@
 import {IGsLogicalHandler} from "./gs.js";
 
 /**
- * Parse an input soucre and produce events to a IGsLogicalHandler
+ * Parse an input source and produce events to a IGsLogicalHandler.
  */
 export interface IGsParser<LH extends IGsLogicalHandler> {
 

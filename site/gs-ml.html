@@ -134,10 +134,10 @@
 		the attribute value <code>~''</code> or the mixed body <code>~``</code>:</p>
 	<div class="cols">
 		<gs-viewer class="border s1 scroll">
-			<pre>&lt;p "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed non risus. Suspendisse lectus tortor, dignissim sit amet, adipiscing nec, ultricies sed, dolor. Cras elementum ultrices diam. Maecenas ligula massa, varius a, semper congue, euismod non, mi. Proin porttitor, orci nec nonummy molestie, enim est eleifend mi, non fermentum diam nisl sit amet erat. Duis semper."></pre>
+			<pre>&lt;p "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed non risus. Suspendisse lectus tortor, dignissim sit amet, adipiscing nec, ultricies sed, dolor. Cras elementum ultrices diam. Maecenas ligula massa, varius a, semper congue, euismod non, mi."></pre>
 		</gs-viewer>
 		<gs-viewer class="border s1 scroll">
-			<pre>&lt;p ~"Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed non risus. Suspendisse lectus tortor, dignissim sit amet, adipiscing nec, ultricies sed, dolor. Cras elementum ultrices diam. Maecenas ligula massa, varius a, semper congue, euismod non, mi. Proin porttitor, orci nec nonummy molestie, enim est eleifend mi, non fermentum diam nisl sit amet erat. Duis semper."></pre>
+			<pre>&lt;p ~"Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed non risus. Suspendisse lectus tortor, dignissim sit amet, adipiscing nec, ultricies sed, dolor. Cras elementum ultrices diam. Maecenas ligula massa, varius a, semper congue, euismod non, mi."></pre>
 		</gs-viewer>
 	</div>
 
@@ -187,7 +187,7 @@
 	<div class="cols">
 
 		<div class="border s1 scroll">
-			<div class="head">GS with preserving structure</div>
+			<div class="head">GS structured comment</div>
 			<gs-viewer>
 <pre>
 &lt;section [
@@ -201,7 +201,7 @@
 
 
 		<div class="border s1 scroll">
-			<div class="head">GS as text comment</div>
+			<div class="head">GS text comment</div>
 			<gs-viewer>
 <pre>
 &lt;section [
@@ -250,7 +250,7 @@
 	<div class="cols">
 
 		<div class="border s1 scroll">
-			<div class="head">GS with preserving structure</div>
+			<div class="head">GS structured comment</div>
 			<gs-viewer>
 <pre>
 &lt;section [
@@ -264,7 +264,7 @@
 
 
 		<div class="border s1 scroll">
-			<div class="head">GS as text comment</div>
+			<div class="head">GS text comment</div>
 			<gs-viewer>
 <pre>
 &lt;section [
@@ -295,12 +295,13 @@
 !"></pre>
 	</ml-gsml-compare>
 
-	<p>The biggest useful dedicated HTML syntax exception is the script tag that allows any characters without escaping until the <code>&lt;/script></code> sequence.</p>
+	<p>The biggest useful dedicated HTML syntax exception is the script tag (or style, textarea) that allows any characters without escaping until the <code>&lt;/script</code>
+		(or <code>&lt;/style</code> , <code>&lt;/textarea</code>) sequence.</p>
 	<p>In GS, the generic useful solution is bounded escaping: the content between the boundaries is raw and never escaped.
 		<code>!"</code> is the simplest boundary, if this character sequence is present in the content, any character (except <code>"</code>)
 		can be inserted in the middle: <code>!!"</code>, <code>!."</code>, <code>!°"</code>, <code>!xyz"</code>, <code>!☠"</code>...</p>
 
-	<p>The GS bounded escaping can also be useful where HTML does not offers good solutions, like in the <code>pre</code> tag:</p>
+	<p>The GS bounded escaping can also be useful where HTML does not offers good solutions, like in the previous pre tag example:</p>
 	<ml-gsml-compare format="gsml" output="html">
 <pre>&lt;pre !"
   &lt;svg:svg xmlns:svg="http://www.w3.org/2000/svg" version="1.1" viewBox="0 0 32 32">

@@ -1,4 +1,4 @@
-import {gsSpecialType, IGsEventAtt, IGsEventNode, IGsEventText, IGsLogicalHandler, IGsName, IGsSerializeOptions, IGsSyntaxHandler, IGsValue} from "../../api/gs.js";
+import {gsSpecialType, IGsEventAtt, IGsEventNode, IGsEventText, IGsLogicalHandler, IGsName, IGsSerializeOptions, IGsStreamHandler, IGsValue} from "../../api/gs.js";
 import {IGsWriter} from "../../api/gsSerializer.js";
 import {GsFormatLH, GsIndentLH, GsMinifiedLH, GsPrettyLH, GsUnformatSH} from "../core/gsSerializer.js";
 
@@ -165,7 +165,7 @@ abstract class GsHtmlColorized extends GsHtmlInlineWriter {
 
 
 /**
- * IGsSyntaxHandler building a tree html tags for viewing a colorized GS.
+ * IGsStreamHandler building a tree html tags for viewing a colorized GS.
  * The rendering respect whiteSpaces input events.
  * class span :
  * 		node, "node comment", "node metas", "node instruction", "node syntax"
@@ -174,7 +174,7 @@ abstract class GsHtmlColorized extends GsHtmlInlineWriter {
  * Class inline : mark, str, bound, esc, sp
  *
  */
-export class GsHtmlColorizedSH extends GsHtmlColorized implements IGsSyntaxHandler {
+export class GsHtmlColorizedSH extends GsHtmlColorized implements IGsStreamHandler {
 
 	headNode(name: IGsName, specialType?: gsSpecialType): void {
 		this.parent = this.addSpan(!specialType ? "node" : specialType === "#" ? "node comment" : specialType === "&" ? "node metas" : specialType === "%" ? "node instruction" : "node syntax");

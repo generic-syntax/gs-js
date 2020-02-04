@@ -10,7 +10,8 @@ describe("gsml", function () {
 		JSX.asXml(() => {
 				xmlToGs(<x/>, '<x>');
 				xmlToGs(<x att="1"/>, '<x att=1>');
-				xmlToGs(<x>test</x>, '<x["test"]>');
+				xmlToGs(<x>test</x>, '<x"test">');
+				xmlToGs(<x>test<a/></x>, '<x["test"<a>]>');
 				xmlToGs(parseXml('<x><!--comment--></x>'), '<x[<#"comment">]>');
 			}
 		)

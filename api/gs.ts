@@ -25,7 +25,7 @@ export interface IGsLogicalHandler {
 /**
  * Low level flat stream event-driven API for whitespaces handling.
  */
-export interface IGsSyntaxHandler {
+export interface IGsStreamHandler {
 	headNode(name: IGsName, specialType?: gsSpecialType | null): void
 
 	attribute(name: IGsName, value: IGsValue, specialType?: gsSpecialType | null, spBeforeEq?: string, spAfterEq?: string): void
@@ -76,7 +76,7 @@ export interface IGsValue {
 }
 
 /**
- * Text body used in IGsLogicalHandler and IGsSyntaxHandler
+ * Text body used in IGsLogicalHandler and IGsStreamHandler
  */
 export interface IGsEventText extends Readonly<IGsValue> {
 }

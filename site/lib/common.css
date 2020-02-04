@@ -20,9 +20,18 @@ h1 {
 	margin: 0;
 	text-align: center;
 	padding: .5em 0;
-	background: black url(../res/gs.svg) no-repeat .5em / 2em;
+	background: black;
 	color: #dddddd;
-	padding-inline-start: 3em;
+	font-size: 2em;
+}
+
+#logoLnk {
+	float: left;
+}
+
+#logo {
+	width: 4em;
+	height: 4em;
 }
 
 header,
