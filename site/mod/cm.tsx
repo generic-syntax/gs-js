@@ -48,7 +48,7 @@ export class CodeMirrorElt extends HTMLElement {
 
 	protected async refresh() {
 		await this.inited;
-		await importCmMode(this.init.mode);
+		await importCmMode(this.init.mode as string);
 		while (this.shadowRoot.lastElementChild.localName !== "style") this.shadowRoot.lastElementChild.remove();
 		this.editor = CodeMirror(this.shadowRoot, this.init);
 		this.dispatchEvent(new CustomEvent("CmEditorInited"));

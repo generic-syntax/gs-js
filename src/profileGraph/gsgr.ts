@@ -443,7 +443,7 @@ export function isRefPromise<T>(p: any): p is IPromiseRef {return p != null && (
 
 
 function newRefPromise(): IPromiseRef {
-	let r: () => any;
+	let r: (v: any) => void;
 	const p = markGsgrPromise(new Promise<any>((resolve) => {
 		r = resolve;
 	})) as IPromiseRef;
