@@ -53,7 +53,7 @@ export class GsParser<H extends IGsLogicalHandler> extends GsLogicalEventProduce
 			n.bodyType = '"';
 			n.name = null;
 			this.txt.value = this.in.readRawChars();
-			this.txt.valueEsc = false;
+			this.txt.valueEsc = null;
 			this.txt.valueFormattable = false;
 			this.handler.startNode(n, this.txt);
 			this.popNode(n);
@@ -78,7 +78,7 @@ export class GsParser<H extends IGsLogicalHandler> extends GsLogicalEventProduce
 			n.bodyType = '"';
 			n.name = null;
 			this.txt.value = this.in.readQuotedChars('"');
-			this.txt.valueEsc = true;
+			this.txt.valueEsc = '"';
 			this.txt.valueFormattable = formattable;
 			this.handler.startNode(n, this.txt);
 			this.popNode(n);
@@ -89,7 +89,7 @@ export class GsParser<H extends IGsLogicalHandler> extends GsLogicalEventProduce
 			n.name = null;
 			const str = this.in.readBoundedChars('"');
 			this.txt.value = str.str;
-			this.txt.valueEsc = str.esc;
+			this.txt.valueEsc = str.esc as `!${string}"`;
 			this.txt.valueFormattable = formattable;
 			this.handler.startNode(n, this.txt);
 			this.popNode(n);
@@ -167,7 +167,7 @@ export class GsParser<H extends IGsLogicalHandler> extends GsLogicalEventProduce
 		case BODYTEXT:
 			n.bodyType = '"';
 			this.txt.value = this.in.readQuotedChars('"');
-			this.txt.valueEsc = true;
+			this.txt.valueEsc = '"';
 			this.txt.valueFormattable = formattable;
 			this.handler.startNode(n, this.txt);
 			if (this.fillAtts(this.in.readCodeNoSpace(), n, true) === NODE_END) this.popNode(n);
@@ -177,7 +177,7 @@ export class GsParser<H extends IGsLogicalHandler> extends GsLogicalEventProduce
 			n.bodyType = '"';
 			const str = this.in.readBoundedChars('"');
 			this.txt.value = str.str;
-			this.txt.valueEsc = str.esc;
+			this.txt.valueEsc = str.esc as `!${string}"`;
 			this.txt.valueFormattable = formattable;
 			this.handler.startNode(n, this.txt);
 			if (this.fillAtts(this.in.readCodeNoSpace(), n, true) === NODE_END) this.popNode(n);
@@ -243,7 +243,7 @@ export class GsParser<H extends IGsLogicalHandler> extends GsLogicalEventProduce
 				n.bodyType = '"';
 				n.name = null;
 				txt.value = this.in.readMixedText();
-				txt.valueEsc = true;
+				txt.valueEsc = null;
 				txt.valueFormattable = txtFormattable;
 				this.handler.startNode(n, txt);
 				this.popNode(n);
@@ -257,21 +257,21 @@ export class GsParser<H extends IGsLogicalHandler> extends GsLogicalEventProduce
 	 */
 	protected fillName(c: number, name: IGsName): boolean {
 		if (c === QUOTE) {
-			name.nameEsc = true;
+			name.nameEsc = "'";
 			name.name = this.in.readQuotedChars("'");
 			return true;
 		} else if (c === BOUND_QUOTE) {
 			const r = this.in.readBoundedChars("'");
-			name.nameEsc = r.esc;
+			name.nameEsc = r.esc as `|${string}'`;
 			name.name = r.str;
 			return true;
 		} else if (isRawChar(c)) {
-			name.nameEsc = false;
+			name.nameEsc = null;
 			name.name = this.in.readRawChars();
 			return true;
 		} else {
-			//pas de name
-			name.nameEsc = false;
+			//no name
+			name.nameEsc = null;
 			name.name = "";
 			return false;
 		}
@@ -321,23 +321,30 @@ export class GsParser<H extends IGsLogicalHandler> extends GsLogicalEventProduce
 					a.valueFormattable = false;
 				}
 				if (c === QUOTE) {
-					a.valueEsc = true;
+					a.valueEsc = "'";
 					a.value = this.in.readQuotedChars("'");
 				} else if (c === BOUND_QUOTE) {
 					const r = this.in.readBoundedChars("'");
-					a.valueEsc = r.esc;
+					a.valueEsc = r.esc as `|${string}'`;
+					a.value = r.str;
+				} else if (c === BODYTEXT) {
+					a.valueEsc = '"';
+					a.value = this.in.readQuotedChars('"');
+				} else if (c === BOUND_BODYTEXT) {
+					const r = this.in.readBoundedChars('"');
+					a.valueEsc = r.esc as `!${string}"`;
 					a.value = r.str;
 				} else if (isRawChar(c)) {
-					a.valueEsc = false;
+					a.valueEsc = null;
 					a.value = this.in.readRawChars();
 				} else {
 					this.in.error("no attribute value found");
 				}
 				c = this.in.readCodeNoSpace();
 			} else {
-				//att sans value
+				//att without value
 				a.value = null;
-				a.valueEsc = false;
+				a.valueEsc = null;
 				a.valueFormattable = false;
 			}
 		}
@@ -403,7 +410,7 @@ export class GsStringReader implements IGsReader {
 			return;
 		}
 		const bound = this.str.substring(startBound, endBound + 1);
-		boundedResult.esc = this.str.substring(startBound + 1, endBound);
+		boundedResult.esc = bound;
 		const startCloseBound = this.str.indexOf(bound, endBound + 1);
 		if (startCloseBound < 0) {
 			this.error("Bounded string not ended");

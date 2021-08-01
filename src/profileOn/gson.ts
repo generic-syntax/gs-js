@@ -1,4 +1,4 @@
-import {IGsEventNode, IGsEventText, IGsLogicalHandler, IGsName, IGsSerializeOptions, IGsValue, rawChars} from "../../api/gs.js";
+import {IGsEventNode, IGsLogicalHandler, IGsName, IGsSerializeOptions, IGsText, IGsValue, rawChars} from "../../api/gs.js";
 import {IGsWriter} from "../../api/gsSerializer.js";
 import {GsEventNode, GsLogicalEventProducer} from "../core/gsLogicalHandler.js";
 import {GsParser} from "../core/gsParser.js";
@@ -65,7 +65,7 @@ export class GsFromJson<H extends IGsLogicalHandler> extends GsLogicalEventProdu
 				node = this.pushNode('', prop);
 				node.bodyType = '"';
 				this.txt.value = "null";
-				this.txt.valueEsc = false;
+				this.txt.valueEsc = null;
 				this.handler.startNode(node, this.txt);
 				this.popNode(node);
 			} else if (Array.isArray(json)) {
@@ -83,7 +83,7 @@ export class GsFromJson<H extends IGsLogicalHandler> extends GsLogicalEventProdu
 					const v = this.objToJson(json[key], true);
 					if (v === undefined) continue;
 					p.name = key;
-					p.nameEsc = !rawChars.test(key);
+					p.nameEsc = !rawChars.test(key) ? "'" : null;
 					if (v === null) {
 						//prop without value
 						const nullNode = this.pushNode('', p);
@@ -101,7 +101,7 @@ export class GsFromJson<H extends IGsLogicalHandler> extends GsLogicalEventProdu
 			node = this.pushNode('', prop);
 			node.bodyType = '"';
 			this.txt.value = json as string;
-			this.txt.valueEsc = true;
+			this.txt.valueEsc = '"';
 			this.handler.startNode(node, this.txt);
 			this.popNode(node);
 			break;
@@ -111,7 +111,7 @@ export class GsFromJson<H extends IGsLogicalHandler> extends GsLogicalEventProdu
 			node = this.pushNode('', prop);
 			node.bodyType = '"';
 			this.txt.value = json.toString();
-			this.txt.valueEsc = false;
+			this.txt.valueEsc = null;
 			this.handler.startNode(node, this.txt);
 			this.popNode(node);
 			break;
@@ -135,7 +135,7 @@ export class GsToJsonLH implements IGsLogicalHandler {
 		return this;
 	}
 
-	startNode(node: IGsEventNode, bodyText?: IGsEventText): void {
+	startNode(node: IGsEventNode, bodyText?: IGsText): void {
 		let v: json;
 		if (!node.nodeType) {
 			//build the json
@@ -195,7 +195,7 @@ export class GsToJsonLH implements IGsLogicalHandler {
 	}
 
 	protected toJsonVal(v: IGsValue): string | boolean | number | null {
-		if (v.valueEsc !== false) return v.value;
+		if (v.valueEsc !== null) return v.value;
 		switch (v.value) {
 		case 'null':
 			return null;

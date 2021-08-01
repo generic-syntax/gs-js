@@ -20,11 +20,11 @@ describe("gsBuilderToLH", function () {
 
 	it("textNodes", function () {
 		const s = new GsBuilderToString();
-		s.text("text1", false);
-		s.text("text2", false);
-		s.text("text: \"\\.", true);
-		s.text("text: \"\\.", "");
-		s.text("text: !\"\\.", "x", true);
+		s.text("text1", null);
+		s.text("text2", null);
+		s.text("text: \"\\.", '"');
+		s.text("text: \"\\.", '!"');
+		s.text("text: !\"\\.", '!x"', true);
 		expect(s.toString()).toEqual('text1 text2"text: \\"\\\\."!"text: "\\.!"~!x"text: !"\\.!x"');
 	});
 
@@ -40,6 +40,22 @@ describe("gsBuilderToLH", function () {
 		s.mixed(true).text("a").text("b").end();
 		s.mixed(true).text("c").mixed().text("d").end().mixed(true).text("e").end().end();
 		expect(s.toString()).toEqual('`my title`~`ab`~`c<`d`><~`e`>`');
+	});
+
+	it("atts", function () {
+		const s = new GsBuilderToString();
+		s.node("tag")
+			.att("auto").val("auto")
+			.att("autoQuoted").val("auto quoted")
+			.att("autoF").val("autoF", undefined, true)
+			.att("str").val("str", "'", true)
+			.att("strB").val("strB", "|'")
+			.att("strB2").val("strB2", "|x'")
+			.att("text").val("text", '"')
+			.att("textB").val("textB", '!"')
+			.att("textB2").val("textB2", '!x"', true)
+			.end();
+		expect(s.toString()).toEqual(`<tag auto=auto autoQuoted='auto quoted'autoF=~'autoF'str=~'str'strB=|'strB|'strB2=|x'strB2|x'text="text"textB=!"textB!"textB2=~!x"textB2!x">`);
 	});
 
 	it("html1", function () {
@@ -58,17 +74,17 @@ describe("gsBuilderToLH", function () {
 	it("json1", function () {
 		const s = new GsBuilderToString();
 		s.map(s => {
-			s.prop("str").text("string", true);
-			s.prop("num").text("12", false);
-			s.prop("null").text("null", false);
+			s.prop("str").text("string", '"');
+			s.prop("num").text("12", null);
+			s.prop("null").text("null", null);
 			s.prop("array").list(s => {
-				s.text("raw", false);
-				s.text("escape \"quote\"", true);
-				s.text("escape \"quote\" by bound", "");
+				s.text("raw", null);
+				s.text("escape \"quote\"", '"');
+				s.text("escape \"quote\" by bound", '!"');
 			}).end();
 			s.prop("object").map(s => {
-				s.prop("boolean true").text("true", false);
-				s.prop("boolean false").text("false", false);
+				s.prop("boolean true").text("true", null);
+				s.prop("boolean false").text("false", null);
 			}).end();
 		}).end();
 		expect(s.toString()).toEqual('{str="string"num=12 null=null array=[raw"escape \\"quote\\""!"escape "quote" by bound!"]object={\'boolean true\'=true\'boolean false\'=false}}');

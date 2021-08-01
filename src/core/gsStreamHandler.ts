@@ -1,11 +1,11 @@
-import {gsSpecialType, IGsEventNode, IGsEventText, IGsLogicalHandler, IGsName, IGsStreamHandler, IGsValue} from "../../api/gs.js";
+import {gsSpecialType, IGsEventNode, IGsLogicalHandler, IGsName, IGsStreamHandler, IGsText, IGsValue} from "../../api/gs.js";
 
 /** Base class for transform IGsLogicalHandler events to IGsStreamHandler. */
 export abstract class GsLH2SH<SH extends IGsStreamHandler> implements IGsLogicalHandler {
 
 	constructor(public handler: SH) {}
 
-	startNode(node: IGsEventNode, bodyText?: IGsEventText): void {
+	startNode(node: IGsEventNode, bodyText?: IGsText): void {
 		if (node.holderProp) {
 			const isNull = node.nodeType === '' && node.bodyType === '';
 			this.handler.property(node.holderProp, isNull);
@@ -58,7 +58,7 @@ export abstract class GsChainedSH<SH extends IGsStreamHandler> implements IGsStr
 		this.handler.attribute(name, value, specialType, spBeforeEq, spAfterEq);
 	}
 
-	text(text: IGsEventText, inBodyMixed?: boolean): void {
+	text(text: IGsText, inBodyMixed?: boolean): void {
 		this.handler.text(text, inBodyMixed);
 	}
 

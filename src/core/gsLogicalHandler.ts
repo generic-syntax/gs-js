@@ -1,4 +1,4 @@
-import {gsEscaping, gsEventBodyType, gsNodeType, gsSpecialType, IGsEventAtt, IGsEventNode, IGsLogicalHandler, IGsName, IGsValue} from "../../api/gs.js";
+import {gsEscapingStr, gsEscapingValue, gsEventBodyType, gsNodeType, gsSpecialType, IGsEventAtt, IGsEventNode, IGsLogicalHandler, IGsName, IGsText} from "../../api/gs.js";
 
 /**
  * Base class for events generator pushed to a IGsLogicalHandler
@@ -12,10 +12,10 @@ export abstract class GsLogicalEventProducer<SH extends IGsLogicalHandler> {
 	protected nodes: GsEventNode[] = [new GsEventNode(null)];
 	protected depth: number = -1;
 
-	/** Singleton for IGsLogicalHandler.bodyText() */
-	protected txt: IGsValue = {
+	/** Singleton for IGsLogicalHandler */
+	protected txt: IGsText = {
 		value: "",
-		valueEsc: false,
+		valueEsc: '"',
 		valueFormattable: false
 	};
 
@@ -42,7 +42,7 @@ export abstract class GsLogicalEventProducer<SH extends IGsLogicalHandler> {
 	protected pushNodeAnonymous(nodeType: gsNodeType, prop: IGsName | undefined): GsEventNode {
 		const n = this.pushNode(nodeType, prop);
 		n.name = null;
-		n.nameEsc = false;
+		n.nameEsc = null;
 		return n;
 	}
 
@@ -66,7 +66,7 @@ export abstract class GsLogicalEventProducer<SH extends IGsLogicalHandler> {
 		if (p) return p;
 		return this.props[this.depth] = {
 			name: "",
-			nameEsc: false
+			nameEsc: null
 		} as IGsName
 	}
 }
@@ -81,7 +81,7 @@ export class GsEventNode implements IGsEventNode {
 
 	nodeType: gsNodeType = '';
 	name: string = '';
-	nameEsc: gsEscaping = false;
+	nameEsc: gsEscapingStr = null;
 
 	_firstAtt: GsEventAtt | null = null;
 	get firstAtt(): null | GsEventAtt {return this._firstAtt && this._firstAtt.name !== null ? this._firstAtt : null};
@@ -170,9 +170,9 @@ export class GsEventNode implements IGsEventNode {
 }
 
 function writeName(n: IGsName, buf: string[]) {
-	if (n.nameEsc === false) {
+	if (n.nameEsc === null) {
 		buf.push(n.name);
-	} else if (n.nameEsc === true) {
+	} else if (n.nameEsc === "'") {
 		let c = n.name;
 		buf.push("'");
 		const r = /['\\]/;
@@ -186,7 +186,7 @@ function writeName(n: IGsName, buf: string[]) {
 		if (c.length > 0) buf.push(c);
 		buf.push("'");
 	} else {
-		buf.push("|", n.nameEsc, "'", n.name, "|", n.nameEsc, "'");
+		buf.push(n.nameEsc, n.name, n.nameEsc);
 	}
 }
 
@@ -197,9 +197,9 @@ function writeName(n: IGsName, buf: string[]) {
 export class GsEventAtt implements IGsEventAtt {
 	attType: gsSpecialType | null;
 	name: string | null;
-	nameEsc: gsEscaping = false;
+	nameEsc: gsEscapingStr = null;
 	value: string | null = null;
-	valueEsc: gsEscaping = false;
+	valueEsc: gsEscapingValue = null;
 	valueFormattable: boolean = false;
 
 	inTail: boolean = false;

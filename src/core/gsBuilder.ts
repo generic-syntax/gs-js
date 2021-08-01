@@ -1,4 +1,4 @@
-import {gsEscaping, gsSpecialType, IGsLogicalHandler, IGsName, IGsSerializeOptions, IGsValue, rawChars} from "../../api/gs.js";
+import {gsEscapingStr, gsEscapingText, gsEscapingValue, gsSpecialType, IGsLogicalHandler, IGsName, IGsSerializeOptions, IGsText, IGsValue, rawChars} from "../../api/gs.js";
 import {IGsBuilder, IGsBuilderState} from "../../api/gsBuilder.js";
 import {GsLogicalEventProducer} from "./gsLogicalHandler.js";
 import {buildSerializer, GsStringWriter} from "./gsSerializer.js";
@@ -14,11 +14,11 @@ export class GsBuilderToLH<SH extends IGsLogicalHandler> extends GsLogicalEventP
 
 	protected stack: IGsBuilderState[] = [];
 
-	node(name?: string, esc?: gsEscaping): this {
+	node(name?: string, esc?: gsEscapingStr | undefined): this {
 		return this.nodeSpecial(null, name, esc);
 	}
 
-	nodeSpecial(specialType: gsSpecialType | null, name?: string, esc?: gsEscaping): this {
+	nodeSpecial(specialType: gsSpecialType | null, name?: string, esc?: gsEscapingStr | undefined): this {
 		if (this.state === IGsBuilderState.inAtt) this.emptyAtt();
 		switch (this.state) {
 		case IGsBuilderState.inHeadNode:
@@ -48,11 +48,11 @@ export class GsBuilderToLH<SH extends IGsLogicalHandler> extends GsLogicalEventP
 		return this;
 	}
 
-	att(name: string, esc?: gsEscaping): this {
+	att(name: string, esc?: gsEscapingStr | undefined): this {
 		return this.attSpecial(null, name, esc);
 	}
 
-	attSpecial(specialType: gsSpecialType | null, name: string, esc?: gsEscaping): this {
+	attSpecial(specialType: gsSpecialType | null, name: string, esc?: gsEscapingStr | undefined): this {
 		if (this.state === IGsBuilderState.inAtt) this.emptyAtt();
 		switch (this.state) {
 		case IGsBuilderState.inHeadNode: {
@@ -86,7 +86,7 @@ export class GsBuilderToLH<SH extends IGsLogicalHandler> extends GsLogicalEventP
 		return this;
 	}
 
-	val(value: string, esc?: gsEscaping, formattable?: boolean): this {
+	val(value: string, esc?: gsEscapingValue | undefined, formattable?: boolean): this {
 		switch (this.state) {
 		case IGsBuilderState.inAtt:
 			setVal(this.peekNode().lastAtt, value, esc, formattable);
@@ -98,14 +98,14 @@ export class GsBuilderToLH<SH extends IGsLogicalHandler> extends GsLogicalEventP
 		return this;
 	}
 
-	text(value: string, esc?: gsEscaping, formattable?: boolean): this {
+	text(value: string, esc?: gsEscapingText | undefined, formattable?: boolean): this {
 		if (this.state === IGsBuilderState.inAtt) this.emptyAtt();
 		if (this.state === IGsBuilderState.inTailNode) this.endNode();
 		switch (this.state) {
 		case IGsBuilderState.inHeadNode: {
 			const n = this.peekNode();
 			n.bodyType = '"';
-			setVal(this.txt, value, !esc ? true : esc, formattable);
+			setText(this.txt, value, !esc ? '"' : esc, formattable);
 			this.handler.startNode(n, this.txt);
 			this.state = IGsBuilderState.inTailNode;
 			break;
@@ -113,7 +113,7 @@ export class GsBuilderToLH<SH extends IGsLogicalHandler> extends GsLogicalEventP
 		case IGsBuilderState.inProp: {
 			const n = this.pushNode('', this.getProp());
 			n.bodyType = '"';
-			setVal(this.txt, value, esc, formattable);
+			setText(this.txt, value, esc, formattable);
 			this.handler.startNode(n, this.txt);
 			this.popNode(n);
 			this.state = IGsBuilderState.inMap;
@@ -123,7 +123,7 @@ export class GsBuilderToLH<SH extends IGsLogicalHandler> extends GsLogicalEventP
 		case IGsBuilderState.inList: {
 			const n = this.pushNodeAnonymous('', undefined);
 			n.bodyType = '"';
-			setVal(this.txt, value, esc, formattable);
+			setText(this.txt, value, esc, formattable);
 			this.handler.startNode(n, this.txt);
 			this.popNode(n);
 			break;
@@ -133,7 +133,7 @@ export class GsBuilderToLH<SH extends IGsLogicalHandler> extends GsLogicalEventP
 			const n = this.pushNodeAnonymous('', undefined);
 			n.bodyType = '"';
 			this.txt.value = value;
-			this.txt.valueEsc = false;
+			this.txt.valueEsc = null;
 			this.txt.valueFormattable = mixed.bodyType === "~`";
 			this.handler.startNode(n, this.txt);
 			this.popNode(n);
@@ -224,7 +224,7 @@ export class GsBuilderToLH<SH extends IGsLogicalHandler> extends GsLogicalEventP
 		return this;
 	}
 
-	prop(name: string, esc?: gsEscaping): this {
+	prop(name: string, esc?: gsEscapingStr | undefined): this {
 		if (this.state === IGsBuilderState.inAtt) this.emptyAtt();
 		switch (this.state) {
 		case IGsBuilderState.inMixed:
@@ -286,7 +286,7 @@ export class GsBuilderToLH<SH extends IGsLogicalHandler> extends GsLogicalEventP
 		this.popState();
 		const a = this.peekNode().lastAtt;
 		a.value = null;
-		a.valueEsc = false;
+		a.valueEsc = null;
 		a.valueFormattable = false;
 	}
 
@@ -336,15 +336,22 @@ export class GsBuilderToLH<SH extends IGsLogicalHandler> extends GsLogicalEventP
 
 }
 
-function setName(n: IGsName, name: string, esc?: gsEscaping) {
+function setName(n: IGsName, name: string, esc?: gsEscapingStr | undefined) {
 	n.name = name;
-	n.nameEsc = esc == null ? !rawChars.test(name) : esc;
+	n.nameEsc = esc === undefined ? !rawChars.test(name) ? "'" : null : esc;
 }
 
-function setVal(v: IGsValue, value: string, esc?: gsEscaping, formattable?: boolean) {
+function setVal(v: IGsValue, value: string, esc?: gsEscapingValue | undefined, formattable?: boolean) {
 	v.value = value;
-	if (esc == null) esc = !rawChars.test(value);
-	v.valueEsc = formattable && esc === false ? true : esc;
+	if (esc === undefined) esc = !rawChars.test(value) ? "'" : null;
+	v.valueEsc = formattable && esc === null ? "'" : esc;
+	v.valueFormattable = formattable || false;
+}
+
+function setText(v: IGsText, value: string, esc?: gsEscapingText | undefined, formattable?: boolean) {
+	v.value = value;
+	if (esc === undefined) esc = !rawChars.test(value) ? '"' : null;
+	v.valueEsc = formattable && esc === null ? '"' : esc;
 	v.valueFormattable = formattable || false;
 }
 

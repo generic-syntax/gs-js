@@ -1,4 +1,4 @@
-import {gsEscaping, gsSpecialType} from "api/gs";
+import {gsEscapingStr, gsEscapingText, gsEscapingValue, gsSpecialType} from "api/gs";
 
 /**
  * Fluent API for building GS content.
@@ -38,7 +38,7 @@ export interface IGsBuilder {
 	 * - 'inHeadNode' | 'inTailNode' : close current node and open a sibling node -> 'inHeadNode'
 	 * - 'inAtt' : leave current attribute without value, close close current node and open a sibling node -> 'inHeadNode'
 	 */
-	node(name?: string, esc?: gsEscaping): this
+	node(name?: string, esc?: gsEscapingStr | undefined): this
 
 
 	/**
@@ -49,7 +49,7 @@ export interface IGsBuilder {
 	 * - 'inHeadNode' | 'inTailNode' : close current node and open a sibling node -> 'inHeadNode'
 	 * - 'inAtt' : leave current attribute without value, close current node and open a sibling node -> 'inHeadNode'
 	 */
-	nodeSpecial(specialType: gsSpecialType | null, name?: string, esc?: gsEscaping): this
+	nodeSpecial(specialType: gsSpecialType | null, name?: string, esc?: gsEscapingStr | undefined): this
 
 	/**
 	 * Possible states:
@@ -58,7 +58,7 @@ export interface IGsBuilder {
 	 * - 'inList' | 'inMixed' | 'inMap' : close body and add a tail attribute -> 'inAtt'
 	 * - 'inProp' : add empty prop, close body and add a tail attribute -> 'inAtt'
 	 */
-	att(name: string, esc?: gsEscaping): this
+	att(name: string, esc?: gsEscapingStr | undefined): this
 
 	/**
 	 * Possible states:
@@ -66,13 +66,13 @@ export interface IGsBuilder {
 	 * - 'inAtt': leave current attribute without value and assa new one -> 'inAtt'
 	 * - 'inList' | 'inMixed' | 'inMap'  | 'inProp' : close body and add a tail attribute -> 'inAtt'
 	 */
-	attSpecial(specialType: gsSpecialType | null, name: string, esc?: gsEscaping): this
+	attSpecial(specialType: gsSpecialType | null, name: string, esc?: gsEscapingStr | undefined): this
 
 	/**
 	 * Possible states:
 	 * - 'inAtt': set attribute value -> 'inHeadNode' | 'inTailNode'
 	 */
-	val(value: string, esc?: gsEscaping, formattable?: boolean): this
+	val(value: string, esc?: gsEscapingValue | undefined, formattable?: boolean): this
 
 	/**
 	 * Possible states:
@@ -84,7 +84,7 @@ export interface IGsBuilder {
 	 * - 'inProp': add a simple text node -> 'inMap'
 	 * - 'inTailNode' : close current node and add a simple sibling text node -> 'root' | 'inList' | 'inMap'
 	 */
-	text(value: string, esc?: gsEscaping, formattable?: boolean): this
+	text(value: string, esc?: gsEscapingText | undefined, formattable?: boolean): this
 
 	/**
 	 * Possible states:
@@ -121,7 +121,7 @@ export interface IGsBuilder {
 	 * - 'root' | 'inList' | 'inProp': add a simple map node and add a property -> 'inProp'
 	 * - 'inMixed': add a map node and add a property -> 'inProp'
 	 */
-	prop(name: string, esc?: gsEscaping): this
+	prop(name: string, esc?: gsEscapingStr | undefined): this
 
 	/**
 	 * Possible states:

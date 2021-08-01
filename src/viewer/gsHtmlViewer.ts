@@ -1,4 +1,4 @@
-import {gsSpecialType, IGsEventAtt, IGsEventNode, IGsEventText, IGsLogicalHandler, IGsName, IGsSerializeOptions, IGsStreamHandler, IGsValue} from "../../api/gs.js";
+import {gsEscapingValue, gsSpecialType, IGsEventAtt, IGsEventNode, IGsLogicalHandler, IGsName, IGsSerializeOptions, IGsStreamHandler, IGsText, IGsValue} from "../../api/gs.js";
 import {IGsWriter} from "../../api/gsSerializer.js";
 import {GsFormatLH, GsIndentLH, GsMinifiedLH, GsPrettyLH, GsUnformatSH} from "../core/gsSerializer.js";
 
@@ -128,29 +128,31 @@ abstract class GsHtmlColorized extends GsHtmlInlineWriter {
 		}
 	}
 
-	text(text: IGsEventText, inBodyMixed?: boolean): void {
+	text(text: IGsText, inBodyMixed?: boolean): void {
 		if (inBodyMixed) {
 			this.mixedText(text.value);
 		} else {
 			const esc = text.valueEsc;
-			if (esc === false) {
+			if (esc === null) {
 				this.rawChars(text.value);
-			} else if (esc === true) {
+			} else if (esc === '"') {
 				this.quotedChars(text.value, '"');
 			} else {
-				this.boundedChars(text.value, esc.length > 0 ? `!${esc}"` : '!"');
+				this.boundedChars(text.value, esc);
 			}
 		}
 	}
 
-	writeStr(c: string, esc: boolean | string, cls: string) {
+	writeStr(c: string, esc: gsEscapingValue, cls: string) {
 		this.parent = this.addSpan(cls);
-		if (esc === false) {
+		if (esc === null) {
 			this.rawChars(c);
-		} else if (esc === true) {
+		} else if (esc === "'") {
 			this.quotedChars(c, "'");
+		} else if (esc === '"') {
+			this.quotedChars(c, '"');
 		} else {
-			this.boundedChars(c, esc.length > 0 ? `|${esc}'` : "|'");
+			this.boundedChars(c, esc);
 		}
 		this.parent = this.parent.parentNode;
 	}
@@ -195,7 +197,7 @@ export class GsHtmlColorizedSH extends GsHtmlColorized implements IGsStreamHandl
 		this.mark(bodyType);
 	}
 
-	text(text: IGsEventText, inBodyMixed?: boolean): void {
+	text(text: IGsText, inBodyMixed?: boolean): void {
 		if (inBodyMixed) {
 			super.text(text, true);
 		} else {
@@ -244,7 +246,7 @@ export class GsHtmlColorizedSH extends GsHtmlColorized implements IGsStreamHandl
  */
 export class GsHtmlColorizedLH extends GsHtmlColorized implements IGsLogicalHandler {
 
-	startNode(node: IGsEventNode, bodyText?: IGsEventText): void {
+	startNode(node: IGsEventNode, bodyText?: IGsText): void {
 		if (node.holderProp) {
 			const isNull = node.nodeType === '' && node.bodyType === '';
 			this.property(node.holderProp, isNull);
@@ -321,7 +323,7 @@ export class GsHtmlColorizedLH extends GsHtmlColorized implements IGsLogicalHand
  */
 export class GsHtmlBlockLH extends GsHtmlColorizedLH {
 
-	startNode(node: IGsEventNode, bodyText?: IGsEventText): void {
+	startNode(node: IGsEventNode, bodyText?: IGsText): void {
 		this.parent = this.addDiv("box");
 		this.parent = this.addSpan("head");
 		super.startNode(node, bodyText);

@@ -1,4 +1,4 @@
-import {gsEscaping, IGsEventNode, IGsEventText, IGsLogicalHandler, IGsSerializeOptions, rawChars, whiteSpaces} from "../../api/gs.js";
+import {gsEscapingStr, gsEscapingText, gsEscapingValue, IGsEventNode, IGsLogicalHandler, IGsSerializeOptions, IGsText, rawChars, whiteSpaces} from "../../api/gs.js";
 import {IGsWriter} from "../../api/gsSerializer.js";
 import {GsEventAtt, GsEventNode, GsLogicalEventProducer} from "../core/gsLogicalHandler.js";
 import {GsParser} from "../core/gsParser.js";
@@ -48,10 +48,10 @@ export interface IGsmlStringifyOptions {
 	formattabeBody?: string[] | ((node: Node) => boolean)
 	formattabeValue?: string[] | ((node: Node, att: Attr) => boolean)
 	skipWhiteSpace?: boolean | ((node: Text, gsParent: IGsEventNode) => boolean)
-	escapingBody?: (node: Node) => gsEscaping
-	escapingValue?: (node: Node, att: Attr) => gsEscaping
-	escapingName?: (node: Node) => gsEscaping
-	escapingAttName?: (node: Node, att: Attr) => gsEscaping
+	escapingBody?: (node: Node) => gsEscapingText
+	escapingValue?: (node: Node, att: Attr) => gsEscapingValue
+	escapingName?: (node: Node) => gsEscapingStr
+	escapingAttName?: (node: Node, att: Attr) => gsEscapingStr
 	serialize?: IGsSerializeOptions
 	writer?: IGsWriter
 }
@@ -70,7 +70,7 @@ export class GsFromDomXml<H extends IGsLogicalHandler> extends GsLogicalEventPro
 
 	setTextBody(v: string[] | ((node: Element) => boolean)): this {
 		if (Array.isArray(v)) this.textBody = (node: Element) => v.indexOf(node.nodeName) >= 0;
-		else this.textBody = v || isFalse;
+		else this.textBody = v || isNull;
 		return this;
 	}
 
@@ -78,7 +78,7 @@ export class GsFromDomXml<H extends IGsLogicalHandler> extends GsLogicalEventPro
 
 	setMixedBody(v: string[] | ((node: Element) => boolean)): this {
 		if (Array.isArray(v)) this.mixedBody = (node: Element) => v.indexOf(node.nodeName) >= 0;
-		else this.mixedBody = v || isFalse;
+		else this.mixedBody = v || isNull;
 		return this;
 	}
 
@@ -86,7 +86,7 @@ export class GsFromDomXml<H extends IGsLogicalHandler> extends GsLogicalEventPro
 
 	setFormattableBody(v: string[] | ((node: Node) => boolean)): this {
 		if (Array.isArray(v)) this.formattableBody = (node: Node) => v.indexOf(node.nodeName) >= 0;
-		else this.formattableBody = v || isFalse;
+		else this.formattableBody = v || isNull;
 		return this;
 	}
 
@@ -94,42 +94,42 @@ export class GsFromDomXml<H extends IGsLogicalHandler> extends GsLogicalEventPro
 
 	setFormattableValue(v: string[] | ((node: Node, att: Attr) => boolean)): this {
 		if (Array.isArray(v)) this.formattableValue = (node: Node, att: Attr) => v.indexOf(att.name) >= 0;
-		else this.formattableValue = v || isFalse;
+		else this.formattableValue = v || isNull;
 		return this;
 	}
 
 	skipWhiteSpace(node: Text, gsParent: IGsEventNode): boolean {return !gsParent?.isBodyMixed}
 
 	setSkipWhiteSpace(v: boolean | ((node: Node, gsParent: IGsEventNode) => boolean)): this {
-		this.skipWhiteSpace = v === true ? isTrue : v === false ? isFalse : v || isFalse;
+		this.skipWhiteSpace = v === true ? isTrue : v === false ? isNull : v || isNull;
 		return this;
 	}
 
-	escapingBody(node: Node, text: string): gsEscaping {return true}
+	escapingBody(node: Node, text: string): gsEscapingText {return '"'}
 
-	setEscapingBody(v: (node: Node, text: string) => gsEscaping): this {
-		this.escapingBody = v || isTrue;
+	setEscapingBody(v: (node: Node, text: string) => gsEscapingText): this {
+		this.escapingBody = v || isTextQuote;
 		return this;
 	}
 
-	escapingName(node: Node): gsEscaping {return !rawChars.test(node.nodeName)}
+	escapingName(node: Node): gsEscapingStr {return !rawChars.test(node.nodeName) ? "'" : null}
 
-	setEscapingName(v: (node: Node) => gsEscaping): this {
-		this.escapingName = v || isTrue;
+	setEscapingName(v: (node: Node) => gsEscapingStr): this {
+		this.escapingName = v || isQuote;
 		return this;
 	}
 
-	escapingValue(node: Node, att: Attr): gsEscaping {return !rawChars.test(att.value)}
+	escapingValue(node: Node, att: Attr): gsEscapingValue {return !rawChars.test(att.value) ? "'" : null}
 
-	setEscapingValue(v: (node: Node, att: Attr) => gsEscaping): this {
-		this.escapingValue = v || isTrue;
+	setEscapingValue(v: (node: Node, att: Attr) => gsEscapingValue): this {
+		this.escapingValue = v || isQuote;
 		return this;
 	}
 
-	escapingAttName(node: Node, att: Attr): gsEscaping {return !rawChars.test(att.name)}
+	escapingAttName(node: Node, att: Attr): gsEscapingStr {return !rawChars.test(att.name) ? "'" : null}
 
-	setEscapingAttName(v: (node: Node, att: Attr) => gsEscaping): this {
-		this.escapingAttName = v || isTrue;
+	setEscapingAttName(v: (node: Node, att: Attr) => gsEscapingStr): this {
+		this.escapingAttName = v || isQuote;
 		return this;
 	}
 
@@ -252,23 +252,23 @@ export class GsFromDomHtml<H extends IGsLogicalHandler> extends GsFromDomXml<H> 
 	}
 
 	/** By default, bounded escaping for script and style tags or if the text contains a '"'. */
-	escapingBody(node: Node, text: string): boolean | string {
+	escapingBody(node: Node, text: string): gsEscapingText {
 		if (node.nodeName === "SCRIPT" || node.nodeName === "STYLE" || text.indexOf('"') >= 0) {
-			let bound = '!"';
-			bound: while (text.indexOf(bound) >= 0) {
+			let bound: `!${string}"` = '!"';
+			while (text.indexOf(bound) >= 0) {
 				if (bound.length > 2) {
 					//boundary too long, use a counter.
 					let i = 0;
 					do {
 						bound = `!${i++}"`;
-						if (text.indexOf(bound) < 0) break bound;
+						if (text.indexOf(bound) < 0) return bound;
 					} while (true);
 				}
-				bound = "!" + bound;
+				bound = "!" + bound as `!${string}"`;
 			}
-			return bound.length === 2 ? "" : bound.substring(1, bound.length - 1);
+			return bound;
 		}
-		return true;
+		return '"';
 	}
 
 	protected setEltName(n: GsEventNode, elt: Element) {
@@ -333,7 +333,7 @@ export class GsToDomXmlLH implements IGsLogicalHandler {
 	}
 
 
-	startNode(node: IGsEventNode, bodyText?: IGsEventText): void {
+	startNode(node: IGsEventNode, bodyText?: IGsText): void {
 		if (node.nodeType === null) {
 			//standard nodeType
 			switch (node.bodyType) {
@@ -395,7 +395,11 @@ export class GsToDomXmlNsLH extends GsToDomXmlLH {
 
 }
 
-function isFalse() {return false}
+function isNull(): null {return null}
+
+function isQuote(): "'" {return "'"}
+
+function isTextQuote(): '"' {return '"'}
 
 function isTrue() {return true}
 

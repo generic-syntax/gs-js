@@ -88,8 +88,12 @@
 		<a href="#name" class="symbol">name</a>
 		( '<span class="char">=</span>' <a href="#value" class="symbol">value</a> )?</p>
 	<p id="value" class="syntax"><span class="symbol">value</span> = <a href="#rawCharacters" class="symbol">rawCharacters</a>
-		| <a href="#formattable" class="symbol">formattable</a> ? <a href="#quotedStr" class="symbol">quotedStr</a>
-		| <a href="#formattable" class="symbol">formattable</a> ? <a href="#boundedStr" class="symbol">boundedStr</a></p>
+		| <a href="#formattable" class="symbol">formattable</a> ? (
+		<a href="#quotedStr" class="symbol">quotedStr</a>
+		| <a href="#boundedStr" class="symbol">boundedStr</a>
+		| <a href="#quotedText" class="symbol">quotedText</a>
+		| <a href="#boundedText" class="symbol">boundedText</a>
+		)</p>
 	<p>Examples:</p>
 	<gs-viewer class="border">
 <pre>&lt; name=value quoted='value with any unicode 😊' bounded=|'value with 'bounded' escaping|' attWithoutValue>
@@ -235,7 +239,7 @@ node = '<' specialType? name? attr* s* (body attr* s*)? '>'
 
 name = rawCharacters | quotedStr | boundedStr
 attr = s* specialType? name (s* '=' s* value)?
-value = rawCharacters | formattable? quotedStr | formattable? boundedStr
+value = rawCharacters | formattable? (quotedStr | boundedStr | quotedText | boundedText)
 
 body = bodyList | bodyText | bodyMap | bodyMixed
 

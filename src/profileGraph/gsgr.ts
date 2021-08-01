@@ -1,4 +1,4 @@
-import {IGsEventNode, IGsEventText, IGsLogicalHandler, IGsSerializeOptions, IGsValue} from "../../api/gs.js";
+import {IGsEventNode, IGsLogicalHandler, IGsSerializeOptions, IGsText, IGsValue} from "../../api/gs.js";
 import {GsParser} from "../core/gsParser.js";
 import {GsStringWriter} from "../core/gsSerializer.js";
 
@@ -145,7 +145,7 @@ export class GsgrLH implements IGsLogicalHandler, IGsgrContext, IGsgrResult {
 		return this.result;
 	}
 
-	startNode(node: IGsEventNode, bodyText?: IGsEventText): void {
+	startNode(node: IGsEventNode, bodyText?: IGsText): void {
 		let v: any;
 		let t: IGsgrType<any>;
 		let attach: boolean;
@@ -392,7 +392,7 @@ class ArgType extends GsgrTypeBase<any> {
  * - 'T' 'F' 'N' 'U' shortcuts for true, false, null and undefined.
  */
 function stringToValue(v: IGsValue): any {
-	if (v.valueEsc !== false) return v.value;
+	if (v.valueEsc !== null) return v.value;
 	switch (v.value) {
 	case 'null':
 	case 'N':

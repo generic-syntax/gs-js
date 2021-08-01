@@ -11,7 +11,7 @@ export interface IGsLogicalHandler {
 	 *   ie a node that has no serialized representation, but a node.holderProp specified.
 	 * @param bodyText Must be specified only if node.bodyType==='"', ie a text body node ('"').
 	 */
-	startNode(node: IGsEventNode, bodyText?: IGsEventText): void
+	startNode(node: IGsEventNode, bodyText?: IGsText): void
 
 	/**
 	 * Notify the end of a node.
@@ -30,7 +30,7 @@ export interface IGsStreamHandler {
 
 	attribute(name: IGsName, value: IGsValue, specialType?: gsSpecialType | null, spBeforeEq?: string, spAfterEq?: string): void
 
-	text(text: IGsEventText, inBodyMixed?: boolean): void
+	text(text: IGsText, inBodyMixed?: boolean): void
 
 	startBody(bodyType: '[' | '{' | '`' | '~`'): void
 
@@ -43,7 +43,13 @@ export interface IGsStreamHandler {
 	whiteSpaces(spaces: string): void
 }
 
-/** Serialization strategies and options. */
+/**
+ * Serialization strategies and options.
+ * - minified: minimize siz but less human readable, elimnating whitespaces when not necessary: <tag att='1'att2='2'>
+ * - pretty: spaces are inserted for human readability: <tag att='1' att2='2'>
+ * - indented: indentation is added for imbricated nodes.
+ * - formatted: nodes are indented, text nodes and attribute values are formatted based on line width.
+ */
 export type IGsSerializeOptions = {
 	method: 'minified'
 	unformat?: boolean
@@ -65,20 +71,23 @@ export type gsIndent = "" | "\t" | " " | "  " | "   " | "    " | "     "
 /** Name for a node or an attribute with its escaping rule. */
 export interface IGsName {
 	name: string;
-	nameEsc: gsEscaping;
+	nameEsc: gsEscapingStr;
 }
 
 /** Attribute value with its escaping rule and its formattable flag. */
 export interface IGsValue {
 	value: null | string
-	valueEsc: gsEscaping
+	valueEsc: gsEscapingValue
 	valueFormattable: boolean
 }
 
 /**
- * Text body used in IGsLogicalHandler and IGsStreamHandler
+ * Body Text
  */
-export interface IGsEventText extends Readonly<IGsValue> {
+export interface IGsText {
+	value: string
+	valueEsc: gsEscapingText
+	valueFormattable: boolean
 }
 
 /**
@@ -101,7 +110,7 @@ export interface IGsEventNode extends IGsName {
 	readonly name: string
 
 	/** Escaping rule for the node. */
-	readonly nameEsc: gsEscaping
+	readonly nameEsc: gsEscapingStr
 
 	/** First tail attribute. */
 	readonly firstAtt: IGsEventAtt | null
@@ -146,9 +155,9 @@ export interface IGsEventNode extends IGsName {
 export interface IGsEventAtt extends IGsName, IGsValue {
 	readonly attType: gsSpecialType | null
 	readonly name: string
-	readonly nameEsc: gsEscaping
+	readonly nameEsc: gsEscapingStr
 	readonly value: string | null
-	readonly valueEsc: gsEscaping
+	readonly valueEsc: gsEscapingValue
 	readonly valueFormattable: boolean
 	readonly offset: number
 	readonly inTail: boolean
@@ -161,7 +170,10 @@ export interface IGsEventAtt extends IGsName, IGsValue {
 	toPath(owner: IGsEventNode): string;
 }
 
-export type gsEscaping = /*raw*/ false |  /*quoted*/ true |  /*bounded*/ string
+
+export type gsEscapingStr = /*raw*/ null | /*quoted*/ "'" |  /*bounded*/ `|${string}'`
+export type gsEscapingText = /*quoted*/ '"' |  /*bounded*/ `!${string}"` | /*raw for simple node*/ null //TODO | /*base64*/ '$'
+export type gsEscapingValue = gsEscapingStr | gsEscapingText
 
 export type gsSpecialType = /*Comment*/ '#' | /*Meta*/ '&' | /*Instruction*/ '%' |  /*Syntax*/ '?'
 

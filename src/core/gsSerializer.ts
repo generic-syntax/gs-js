@@ -1,4 +1,4 @@
-import {gsEscaping, gsIndent, gsSpecialType, IGsEventNode, IGsEventText, IGsLogicalHandler, IGsName, IGsSerializeOptions, IGsStreamHandler, IGsValue, rawChars} from "../../api/gs.js";
+import {gsEscapingText, gsEscapingValue, gsIndent, gsSpecialType, IGsEventNode, IGsLogicalHandler, IGsName, IGsSerializeOptions, IGsStreamHandler, IGsText, IGsValue, rawChars} from "../../api/gs.js";
 import {IGsWriter} from "../../api/gsSerializer.js";
 import {GsLogicalEventProducer} from "./gsLogicalHandler.js";
 import {GsChainedSH, GsLH2SH} from "./gsStreamHandler.js";
@@ -15,7 +15,7 @@ export class GsMinifiedLH<SH extends IGsStreamHandler> extends GsLH2SH<SH> {
  * For human pretty reading, white-spaces are inserted between attributes and before value properties in body map.
  */
 export class GsPrettyLH<SH extends IGsStreamHandler> extends GsLH2SH<SH> {
-	startNode(node: IGsEventNode, bodyText?: IGsEventText): void {
+	startNode(node: IGsEventNode, bodyText?: IGsText): void {
 		if (node.holderProp) {
 			const isNull = node.nodeType === '' && node.bodyType === '';
 			this.handler.property(node.holderProp, isNull);
@@ -87,7 +87,7 @@ export class GsIndentLH<SH extends IGsStreamHandler> extends GsPrettyLH<SH> {
 		this.spaces = [];
 	}
 
-	startNode(node: IGsEventNode, bodyText?: IGsEventText): void {
+	startNode(node: IGsEventNode, bodyText?: IGsText): void {
 		if (!node.holderProp) {
 			const p = node.parent;
 			if (!p || !p.isBodyMixed) this.addIndent(p);
@@ -162,13 +162,13 @@ export class GsUnformatLH<LH extends IGsLogicalHandler> extends GsLogicalEventPr
 		this.txt.valueFormattable = true;
 	}
 
-	startNode(node: IGsEventNode, bodyText?: IGsEventText): void {
+	startNode(node: IGsEventNode, bodyText?: IGsText): void {
 		const n = this.pushNodeFrom(node);
 		for (let att = node.firstAtt; att; att = att.next) {
 			const a = n.pushAttFrom(att);
 			if (a.valueFormattable && a.value) a.value = this.unindent(a.value);
 		}
-		let t: IGsEventText;
+		let t: IGsText;
 		if (bodyText) {
 			if (bodyText.valueFormattable && bodyText.value) {
 				this.txt.value = this.unindent(bodyText.value);
@@ -197,22 +197,28 @@ export class GsUnformatLH<LH extends IGsLogicalHandler> extends GsLogicalEventPr
 
 export class GsUnformatSH<SH extends IGsStreamHandler> extends GsChainedSH<SH> implements IGsStreamHandler {
 
-	protected txt: IGsValue = {
+	protected val: IGsValue = {
 		value: "",
-		valueEsc: false,
+		valueEsc: null,
+		valueFormattable: true
+	};
+
+	protected txt: IGsText = {
+		value: "",
+		valueEsc: null,
 		valueFormattable: true
 	};
 
 	attribute(name: IGsName, value: IGsValue, specialType?: gsSpecialType | null, spBeforeEq?: string, spAfterEq?: string): void {
 		if (value.valueFormattable && value.value) {
-			this.txt.value = this.unindent(value.value);
-			this.txt.valueEsc = value.valueEsc;
-			this.handler.attribute(name, this.txt, specialType, spBeforeEq, spAfterEq);
+			this.val.value = this.unindent(value.value);
+			this.val.valueEsc = value.valueEsc;
+			this.handler.attribute(name, this.val, specialType, spBeforeEq, spAfterEq);
 		} else
 			this.handler.attribute(name, value, specialType, spBeforeEq, spAfterEq);
 	}
 
-	text(text: IGsEventText, inBodyMixed?: boolean): void {
+	text(text: IGsText, inBodyMixed?: boolean): void {
 		if (text.valueFormattable && text.value) {
 			this.txt.value = this.unindent(text.value);
 			this.txt.valueEsc = text.valueEsc;
@@ -250,16 +256,22 @@ export class GsSerializer<OUT extends IGsWriter> extends GsLH2SH<GsSerializer<OU
 			if (spBeforeEq) out.space(spBeforeEq);
 			out.mark('=');
 			if (spAfterEq) out.space(spAfterEq);
-			if (value.valueFormattable) out.mark('~');
-			writeNameValue(out, value.value, value.valueEsc);
+			if (value.valueFormattable) {
+				out.mark('~');
+				writeNameValue(out, value.value, value.valueEsc == null ? "'" : value.valueEsc);
+			} else {
+				writeNameValue(out, value.value, value.valueEsc);
+			}
 		}
 	}
 
-	text(text: IGsEventText, inBodyMixed: boolean): void {
+	text(text: IGsText, inBodyMixed: boolean): void {
 		if (inBodyMixed) {
 			this.out.mixedText(text.value);
+		} else if (text.valueFormattable) {
+			this.out.mark('~');
+			writeText(this.out, text.value, text.valueEsc == null ? '"' : text.valueEsc);
 		} else {
-			if (text.valueFormattable) this.out.mark('~');
 			writeText(this.out, text.value, text.valueEsc);
 		}
 	}
@@ -302,18 +314,19 @@ export class GsSerializer<OUT extends IGsWriter> extends GsLH2SH<GsSerializer<OU
 }
 
 
-export function writeNameValue(out: IGsWriter, name: string, esc: gsEscaping | undefined) {
-	if (esc == null) esc = !rawChars.test(name);
-	if (esc === false) out.rawChars(name);
-	else if (esc === true) out.quotedChars(name, "'");
-	else out.boundedChars(name, esc.length > 0 ? `|${esc}'` : "|'");
+export function writeNameValue(out: IGsWriter, nameOrVal: string, esc: gsEscapingValue | undefined) {
+	if (esc === undefined) esc = !rawChars.test(nameOrVal) ? "'" : null;
+	if (esc === null) out.rawChars(nameOrVal);
+	else if (esc === "'") out.quotedChars(nameOrVal, "'");
+	else if (esc === '"') out.quotedChars(nameOrVal, '"');
+	else out.boundedChars(nameOrVal, esc);
 }
 
-export function writeText(out: IGsWriter, value: string, esc?: gsEscaping, formattable?: boolean) {
+export function writeText(out: IGsWriter, value: string, esc?: gsEscapingText | undefined, formattable?: boolean) {
 	if (formattable) out.mark('~');
-	if (typeof esc === 'string') out.boundedChars(value, esc.length > 0 ? `!${esc}"` : '!"');
-	else if (esc !== false) out.quotedChars(value, '"');
-	else out.rawChars(value);
+	if (esc === '"' || esc === undefined) out.quotedChars(value, '"');
+	else if (esc === null) out.rawChars(value);
+	else out.boundedChars(value, esc);
 }
 
 

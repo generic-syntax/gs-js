@@ -1,4 +1,4 @@
-import {IGsEventNode, IGsEventText, IGsLogicalHandler} from "api/gs";
+import {IGsEventNode, IGsLogicalHandler, IGsText} from "api/gs";
 import {GsParser} from "../src/core/gsParser.js";
 import {GsSerializer, GsStringWriter} from "../src/core/gsSerializer.js";
 
@@ -104,7 +104,7 @@ function parseTest(src: string, res?: string) {
 
 
 class LogSH implements IGsLogicalHandler {
-	startNode(node: IGsEventNode, bodyText?: IGsEventText): void {
+	startNode(node: IGsEventNode, bodyText?: IGsText): void {
 		console.log("startNode", node);
 		if (bodyText) console.log("bodyText", bodyText);
 	}
